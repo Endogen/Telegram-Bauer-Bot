@@ -6,7 +6,6 @@ from bauer.plugin import BauerPlugin, Category
 from bauer.bismuth import Bismuth
 
 
-# TODO: Accept terms to use wallet
 class Tip(BauerPlugin):
 
     DEFAULT_TIP = 1
@@ -14,7 +13,6 @@ class Tip(BauerPlugin):
     def get_handle(self):
         return "tip"
 
-    @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         if not args:

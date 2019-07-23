@@ -25,7 +25,6 @@ class Wallet(BauerPlugin):
     def get_handle(self):
         return "wallet"
 
-    @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         if not args:
@@ -65,9 +64,7 @@ class Wallet(BauerPlugin):
                 parse_mode=ParseMode.MARKDOWN)
 
         elif arg == "deposit":
-            with open(Bismuth.get_wallet_path(username), "r") as f:
-                address = json.load(f)["Address"]
-
+            address = Bismuth.get_address_for(username)
             qr_code = os.path.join(con.DAT_DIR, f"{username}.png")
 
             if not os.path.isfile(qr_code):
@@ -108,7 +105,7 @@ class Wallet(BauerPlugin):
                     parse_mode=ParseMode.MARKDOWN)
                 return
 
-            if not utl.is_number(amount):
+            if not utl.is_number(amount) or float(amount) <= 0:
                 update.message.reply_text(
                     text=f"{emo.ERROR} Specified amount is not valid",
                     parse_mode=ParseMode.MARKDOWN)
