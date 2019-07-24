@@ -58,6 +58,11 @@ class Bismuth:
         return os.path.isfile(wallet)
 
     @staticmethod
+    def convert_trxid(trxid):
+        # TODO: Which other characters do i have to replace?
+        return trxid.replace("+", "%2B")
+
+    @staticmethod
     def get_terms():
         return "Generated wallet is meant to be for tipping and should only " \
                "hold small amounts of coins. Bismuth developers have access " \
