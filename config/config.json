@@ -15,11 +15,5 @@
     },
     "database": {
         "use_db": true
-    },
-    "rate_limit": {
-        "enabled": true,
-        "requests": 5,
-        "timespan": 30,
-        "incl_cmd": false
     }
 }
