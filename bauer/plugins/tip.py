@@ -52,11 +52,17 @@ class Tip(BauerPlugin):
         to_user = to_user[1:]
         from_user = update.effective_user["username"]
 
-        # Check if user has a wallet
+        # Check if sender has a wallet
         if not Bismuth.wallet_exists(from_user):
             update.message.reply_text(
-                text=f"You don't have a wallet yet, "
-                     f"create one with `/wallet create`",
+                text=f"No wallet yet, create one with\n`/wallet create`",
+                parse_mode=ParseMode.MARKDOWN)
+            return
+
+        # Check if recipient has a wallet
+        if not Bismuth.wallet_exists(to_user):
+            update.message.reply_text(
+                text=f"User @{utl.esc_md(to_user)} doesn't have a wallet",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -77,7 +83,8 @@ class Tip(BauerPlugin):
                 text=f"{emo.ERROR} Something went wrong")
 
     def get_usage(self):
-        return f"`/{self.get_handle()} @<user name> <amount>`"
+        return f"`/{self.get_handle()} <@username> <amount>`\n" \
+               f"`/{self.get_handle()} <@username>`"
 
     def get_description(self):
         return "Tip BIS coins to user"
