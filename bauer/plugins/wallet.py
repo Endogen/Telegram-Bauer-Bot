@@ -14,6 +14,8 @@ from bauer.bismuth import Bismuth
 
 class Wallet(BauerPlugin):
 
+    BLCK_EXPL_URL = "https://bismuth.online/search?quicksearch="
+
     def __init__(self, telegram_bot):
         super().__init__(telegram_bot)
 
@@ -51,13 +53,10 @@ class Wallet(BauerPlugin):
 
         # SHOW ADDRESS
         elif arg == "address":
-            address = Bismuth.get_address_for(username)
-
-            if not address:
-                update.message.reply_text(
-                    text=f"Create a wallet first with `{self.get_handle()} create`",
-                    parse_mode=ParseMode.MARKDOWN)
+            if not self._wallet_exists(update, username):
                 return
+
+            address = Bismuth.get_address_for(username)
 
             update.message.reply_text(
                 text=f"Your BIS address is `{address}`",
@@ -65,6 +64,9 @@ class Wallet(BauerPlugin):
 
         # DEPOSIT
         elif arg == "deposit":
+            if not self._wallet_exists(update, username):
+                return
+
             address = Bismuth.get_address_for(username)
             qr_code = os.path.join(con.DAT_DIR, f"{username}.png")
 
@@ -90,6 +92,9 @@ class Wallet(BauerPlugin):
 
         # WITHDRAW
         elif arg == "withdraw":
+            if not self._wallet_exists(update, username):
+                return
+
             if len(args) != 3:
                 update.message.reply_text(
                     text=f"{emo.ERROR} Wrong syntax\n"
@@ -102,11 +107,11 @@ class Wallet(BauerPlugin):
 
             if not BismuthUtil.valid_address(send_to):
                 update.message.reply_text(
-                    text=f"{emo.ERROR} Bismuth address of recipient is not valid",
+                    text=f"{emo.ERROR} Bismuth address is not valid",
                     parse_mode=ParseMode.MARKDOWN)
                 return
 
-            if not utl.is_number(amount) or float(amount) <= 0:
+            if not utl.is_number(amount) or float(amount) < 0:
                 update.message.reply_text(
                     text=f"{emo.ERROR} Specified amount is not valid",
                     parse_mode=ParseMode.MARKDOWN)
@@ -116,17 +121,17 @@ class Wallet(BauerPlugin):
                 text=f"{emo.WAIT} Sending...",
                 parse_mode=ParseMode.MARKDOWN)
 
-            # TODO: Test
-            # TODO: What if balance not sufficient?
             bis = Bismuth(username)
             bis.load_wallet()
             trx = bis.send(send_to, amount)
+
+            url = f"{self.BLCK_EXPL_URL}{Bismuth.convert_trxid(trx)}"
 
             if trx:
                 self.tgb.updater.bot.edit_message_text(
                     chat_id=message.chat_id,
                     message_id=message.message_id,
-                    text=f"{emo.CHECK} DONE! Transaction ID:\n`{trx}`",
+                    text=f"{emo.CHECK} DONE! [View on Block Explorer]({url})\n",
                     parse_mode=ParseMode.MARKDOWN)
             else:
                 self.tgb.updater.bot.edit_message_text(
@@ -135,12 +140,29 @@ class Wallet(BauerPlugin):
                     text=f"{emo.ERROR} Not able to send Transaction")
         # BALANCE
         elif arg == "balance":
+            if not self._wallet_exists(update, username):
+                return
+
+            message = update.message.reply_text(
+                text=f"{emo.WAIT} Checking balance...",
+                parse_mode=ParseMode.MARKDOWN)
+
             bis = Bismuth(username)
             bis.load_wallet()
 
-            update.message.reply_text(
+            self.tgb.updater.bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
                 text=f"Balance: `{bis.get_balance()}` BIS",
                 parse_mode=ParseMode.MARKDOWN)
+
+    def _wallet_exists(self, update, username):
+        if not Bismuth.wallet_exists(username):
+            update.message.reply_text(
+                text=f"Create a wallet first with\n`/{self.get_handle()} create`",
+                parse_mode=ParseMode.MARKDOWN)
+            return False
+        return True
 
     def _accept_terms(self):
         buttons = [
@@ -176,9 +198,10 @@ class Wallet(BauerPlugin):
 
     def get_usage(self):
         return f"`/{self.get_handle()} create`\n" \
-               f"'/{self.get_handle()} address`\n" \
+               f"`/{self.get_handle()} address`\n" \
                f"`/{self.get_handle()} deposit`\n" \
-               f"`/{self.get_handle()} withdraw`"
+               f"`/{self.get_handle()} withdraw`\n" \
+               f"`/{self.get_handle()} balance`"
 
     def get_description(self):
         return "Interact with your wallet"
