@@ -63,6 +63,7 @@ class Wallet(BauerPlugin):
                 text=f"Your BIS address is `{address}`",
                 parse_mode=ParseMode.MARKDOWN)
 
+        # DEPOSIT
         elif arg == "deposit":
             address = Bismuth.get_address_for(username)
             qr_code = os.path.join(con.DAT_DIR, f"{username}.png")
@@ -87,7 +88,7 @@ class Wallet(BauerPlugin):
                     caption=f"`{address}`",
                     parse_mode=ParseMode.MARKDOWN)
 
-        # WITHDRAW FROM ADDRESS
+        # WITHDRAW
         elif arg == "withdraw":
             if len(args) != 3:
                 update.message.reply_text(
@@ -132,6 +133,14 @@ class Wallet(BauerPlugin):
                     chat_id=message.chat_id,
                     message_id=message.message_id,
                     text=f"{emo.ERROR} Not able to send Transaction")
+        # BALANCE
+        elif arg == "balance":
+            bis = Bismuth(username)
+            bis.load_wallet()
+
+            update.message.reply_text(
+                text=f"Balance: `{bis.get_balance()}` BIS",
+                parse_mode=ParseMode.MARKDOWN)
 
     def _accept_terms(self):
         buttons = [
