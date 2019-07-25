@@ -14,89 +14,94 @@ class Admin(BauerPlugin):
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
-        if args:
-            command = args[0].lower()
+        if not args:
+            update.message.reply_text(
+                text=f"Usage:\n{self.get_usage()}",
+                parse_mode=ParseMode.MARKDOWN)
+            return
 
-            # Execute raw SQL
-            if command == "sql":
-                if Cfg.get("database", "use_db"):
-                    args.pop(0)
+        args = [s.lower() for s in args]
+        command = args[0].lower()
 
-                    sql = " ".join(args)
-                    data = self.tgb.db.execute_sql(sql)
+        # Execute raw SQL
+        if command == "sql":
+            if Cfg.get("database", "use_db"):
+                args.pop(0)
 
-                    if data["error"]:
-                        msg = data["error"]
-                    elif data["result"]:
-                        msg = '\n'.join(str(s) for s in data["result"])
-                    else:
-                        msg = f"{emo.INFO} No data returned"
+                sql = " ".join(args)
+                data = self.tgb.db.execute_sql(sql)
 
-                    update.message.reply_text(msg)
+                if data["error"]:
+                    msg = data["error"]
+                elif data["result"]:
+                    msg = '\n'.join(str(s) for s in data["result"])
                 else:
-                    update.message.reply_text(f"{emo.INFO} Database not enabled")
+                    msg = f"{emo.INFO} No data returned"
 
-            # Change configuration
-            elif command == "cfg":
-                args.pop(0)
-                v = args[-1]
-                v = v.lower()
-                args.pop(-1)
-
-                # Convert to boolean
-                if v == "true" or v == "false":
-                    v = utl.str2bool(v)
-
-                # Convert to integer
-                elif v.isnumeric():
-                    v = int(v)
-
-                # Convert to null
-                elif v == "null" or v == "none":
-                    v = None
-
-                try:
-                    Cfg.set(v, *args)
-                except Exception as e:
-                    return self.handle_error(e, update)
-
-                update.message.reply_text("Config changed")
-
-            # Manage plugins
-            elif command == "plg":
-                args.pop(0)
-
-                try:
-                    # Add plugin
-                    if args[0].lower() == "add":
-                        result = self.tgb.add_plugin(args[1])
-
-                    # Remove plugin
-                    elif args[0].lower() == "remove":
-                        result = self.tgb.remove_plugin(args[1])
-
-                    # Wrong sub-command
-                    else:
-                        update.message.reply_text(
-                            text="Only `add` and `remove` are supported",
-                            parse_mode=ParseMode.MARKDOWN)
-                        return
-
-                    # Reply with message
-                    if result["success"]:
-                        update.message.reply_text(f"{emo.CHECK} {result['msg']}")
-                    else:
-                        update.message.reply_text(f"{emo.ERROR} {result['msg']}")
-                except Exception as e:
-                    update.message.reply_text(text=f"{emo.ERROR} {e}")
-
+                update.message.reply_text(msg)
             else:
-                update.message.reply_text(
-                    text=f"Unknown command `{args[0]}`",
-                    parse_mode=ParseMode.MARKDOWN)
+                update.message.reply_text(f"{emo.INFO} Database not enabled")
+
+        # Change configuration
+        elif command == "cfg":
+            args.pop(0)
+            v = args[-1]
+            v = v.lower()
+            args.pop(-1)
+
+            # Convert to boolean
+            if v == "true" or v == "false":
+                v = utl.str2bool(v)
+
+            # Convert to integer
+            elif v.isnumeric():
+                v = int(v)
+
+            # Convert to null
+            elif v == "null" or v == "none":
+                v = None
+
+            try:
+                Cfg.set(v, *args)
+            except Exception as e:
+                return self.handle_error(e, update)
+
+            update.message.reply_text(f"{emo.CHECK} Config changed")
+
+        # Manage plugins
+        elif command == "plg":
+            args.pop(0)
+
+            try:
+                # Add plugin
+                if args[0].lower() == "add":
+                    result = self.tgb.add_plugin(args[1])
+
+                # Remove plugin
+                elif args[0].lower() == "remove":
+                    result = self.tgb.remove_plugin(args[1])
+
+                # Wrong sub-command
+                else:
+                    update.message.reply_text(
+                        text="Only `add` and `remove` are supported",
+                        parse_mode=ParseMode.MARKDOWN)
+                    return
+
+                # Reply with message
+                if result["success"]:
+                    update.message.reply_text(f"{emo.CHECK} {result['msg']}")
+                else:
+                    update.message.reply_text(f"{emo.ERROR} {result['msg']}")
+            except Exception as e:
+                update.message.reply_text(text=f"{emo.ERROR} {e}")
+
         else:
-            update.message.reply_text(self.get_usage())
+            update.message.reply_text(
+                text=f"Unknown command `{args[0]}`",
+                parse_mode=ParseMode.MARKDOWN)
 
     def get_usage(self):
-        # TODO: Explain usage
-        return None
+        return f"`/{self.get_handle()} sql <statement>`\n" \
+               f"`/{self.get_handle()} cfg <key> (<sub-key>) <value>`\n" \
+               f"`/{self.get_handle()} plg add|remove <plugin name>`"
