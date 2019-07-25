@@ -1,7 +1,6 @@
 import bauer.constants as con
 import bauer.utils as utl
 import bauer.emoji as emo
-import json
 import os
 
 from MyQR import myqr
@@ -12,6 +11,7 @@ from bauer.plugin import BauerPlugin, Category
 from bauer.bismuth import Bismuth
 
 
+# TODO: Add address book
 class Wallet(BauerPlugin):
 
     BLCK_EXPL_URL = "https://bismuth.online/search?quicksearch="
