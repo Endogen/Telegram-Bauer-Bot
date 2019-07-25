@@ -24,7 +24,7 @@ class Feedback(BauerPlugin):
         else:
             name = user.first_name
 
-        feedback = update.message.text.replace(f"/{self.get_handle()[0]} ", "")
+        feedback = update.message.text.replace(f"/{self.get_handle()} ", "")
 
         for admin in Cfg.get("admin_id"):
             bot.send_message(admin, f"Feedback from {name}: {feedback}")
