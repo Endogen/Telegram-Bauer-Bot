@@ -18,7 +18,7 @@ class Backup(BauerPlugin):
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         # List of folders to exclude from backup
-        exclude = [con.LOG_DIR, con.UPD_DIR, con.BCK_DIR, "__pycache__"]
+        exclude = [con.LOG_DIR, con.BCK_DIR, "__pycache__"]
 
         # Create 'backup' folder
         os.makedirs(os.path.join(os.getcwd(), con.BCK_DIR), exist_ok=True)
@@ -43,6 +43,3 @@ class Backup(BauerPlugin):
             chat_id=update.effective_user.id,
             caption=f"{emo.CHECK} Backup created",
             document=open(os.path.join(base_dir, filename), 'rb'))
-
-    def get_usage(self):
-        return None
