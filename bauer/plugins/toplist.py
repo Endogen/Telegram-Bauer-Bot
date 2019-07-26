@@ -33,6 +33,7 @@ class Toplist(BauerPlugin):
         elif args == "tip":
             statement = self.tgb.db.get_sql("top_tip")
             result = self.tgb.db.execute_sql(statement)
+            # TODO: Work with the result
         else:
             update.message.reply_text(
                 text=f"Usage:\n{self.get_usage()}",
