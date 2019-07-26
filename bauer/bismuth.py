@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import bauer.constants as con
+import urllib.parse as ul
 
 from bismuthclient.bismuthclient import BismuthClient
 
@@ -17,10 +18,6 @@ class Bismuth:
         client = BismuthClient(wallet_file=wallet_path)
         return client
 
-    @staticmethod
-    def get_wallet_path(username):
-        return os.path.join(con.DAT_DIR, f"{username}.der")
-
     def load_wallet(self):
         c = self._client
         c.new_wallet(wallet_file=c.wallet_file)
@@ -31,6 +28,17 @@ class Bismuth:
 
     def get_address(self):
         return self._client.address
+
+    def tip(self, username, amount):
+        address = Bismuth.get_address_for(username)
+        return self._client.send(address, amount) if address else None
+
+    def send(self, send_to, amount):
+        return self._client.send(send_to, float(amount))
+
+    @staticmethod
+    def get_wallet_path(username):
+        return os.path.join(con.DER_DIR, f"{username}.der")
 
     @staticmethod
     def get_address_for(username):
@@ -45,22 +53,14 @@ class Bismuth:
         else:
             return None
 
-    def tip(self, username, amount):
-        address = Bismuth.get_address_for(username)
-        return self._client.send(address, amount) if address else None
-
-    def send(self, send_to, amount):
-        return self._client.send(send_to, float(amount))
-
     @staticmethod
     def wallet_exists(username):
         wallet = Bismuth.get_wallet_path(username)
         return os.path.isfile(wallet)
 
     @staticmethod
-    def convert_trxid(trxid):
-        # TODO: Which other characters do i have to replace?
-        return trxid.replace("+", "%2B")
+    def url_encode_trxid(trxid):
+        return ul.quote_plus(trxid)
 
     @staticmethod
     def get_terms():

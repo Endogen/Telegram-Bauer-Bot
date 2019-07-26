@@ -12,6 +12,7 @@ class About(BauerPlugin):
     def get_handle(self):
         return "about"
 
+    @BauerPlugin.save_user
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         about_file = os.path.join(con.RES_DIR, self.ABOUT_FILENAME)

@@ -21,7 +21,7 @@ class Admin(BauerPlugin):
             return
 
         args = [s.lower() for s in args]
-        command = args[0].lower()
+        command = args[0]
 
         # Execute raw SQL
         if command == "sql":
@@ -29,14 +29,15 @@ class Admin(BauerPlugin):
                 args.pop(0)
 
                 sql = " ".join(args)
-                data = self.tgb.db.execute_sql(sql)
+                res = self.tgb.db.execute_sql(sql)
 
-                if data["error"]:
-                    msg = data["error"]
-                elif data["result"]:
-                    msg = '\n'.join(str(s) for s in data["result"])
+                if res["success"]:
+                    if res["data"]:
+                        msg = '\n'.join(str(s) for s in res["data"])
+                    else:
+                        msg = f"{emo.INFO} No data returned"
                 else:
-                    msg = f"{emo.INFO} No data returned"
+                    msg = f"{emo.ERROR} {res['data']}"
 
                 update.message.reply_text(msg)
             else:
@@ -66,7 +67,7 @@ class Admin(BauerPlugin):
             except Exception as e:
                 return self.handle_error(e, update)
 
-            update.message.reply_text(f"{emo.CHECK} Config changed")
+            update.message.reply_text(f"{emo.DONE} Config changed")
 
         # Manage plugins
         elif command == "plg":
@@ -75,11 +76,11 @@ class Admin(BauerPlugin):
             try:
                 # Add plugin
                 if args[0].lower() == "add":
-                    result = self.tgb.add_plugin(args[1])
+                    res = self.tgb.add_plugin(args[1])
 
                 # Remove plugin
                 elif args[0].lower() == "remove":
-                    result = self.tgb.remove_plugin(args[1])
+                    res = self.tgb.remove_plugin(args[1])
 
                 # Wrong sub-command
                 else:
@@ -89,10 +90,10 @@ class Admin(BauerPlugin):
                     return
 
                 # Reply with message
-                if result["success"]:
-                    update.message.reply_text(f"{emo.CHECK} {result['msg']}")
+                if res["success"]:
+                    update.message.reply_text(f"{emo.DONE} {res['msg']}")
                 else:
-                    update.message.reply_text(f"{emo.ERROR} {result['msg']}")
+                    update.message.reply_text(f"{emo.ERROR} {res['msg']}")
             except Exception as e:
                 update.message.reply_text(text=f"{emo.ERROR} {e}")
 

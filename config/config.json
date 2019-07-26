@@ -3,8 +3,8 @@
         134166731
     ],
     "telegram": {
-        "read_timeout": 15,
-        "connect_timeout": 15
+        "read_timeout": 20,
+        "connect_timeout": 20
     },
     "webhook": {
         "listen": "0.0.0.0",

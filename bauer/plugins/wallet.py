@@ -16,17 +16,15 @@ class Wallet(BauerPlugin):
 
     BLCK_EXPL_URL = "https://bismuth.online/search?quicksearch="
 
-    def __init__(self, telegram_bot):
-        super().__init__(telegram_bot)
-
+    def __enter__(self):
         self.tgb.dispatcher.add_handler(
-            CallbackQueryHandler(
-                self._callback,
-                pattern="accept"))
+            CallbackQueryHandler(self._callback))
+        return self
 
     def get_handle(self):
         return "wallet"
 
+    @BauerPlugin.save_user
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         if not args:
@@ -36,7 +34,8 @@ class Wallet(BauerPlugin):
             return
 
         username = update.effective_user["username"]
-        arg = args[0].lower()
+        args = [s.lower() for s in args]
+        arg = args[0]
 
         # CREATE WALLET
         if arg == "create":
@@ -49,7 +48,7 @@ class Wallet(BauerPlugin):
             update.message.reply_text(
                 text=Bismuth.get_terms(),
                 parse_mode=ParseMode.MARKDOWN,
-                reply_markup=self._accept_terms())
+                reply_markup=self._accept_terms(username))
 
         # SHOW ADDRESS
         elif arg == "address":
@@ -67,8 +66,10 @@ class Wallet(BauerPlugin):
             if not self._wallet_exists(update, username):
                 return
 
+            qr_dir = con.DER_DIR
+            qr_name = f"{username}.png"
             address = Bismuth.get_address_for(username)
-            qr_code = os.path.join(con.DAT_DIR, f"{username}.png")
+            qr_code = os.path.join(qr_dir, qr_name)
 
             if not os.path.isfile(qr_code):
                 logo = os.path.join(con.RES_DIR, "bismuth.png")
@@ -81,8 +82,8 @@ class Wallet(BauerPlugin):
                     colorized=True,
                     contrast=1.0,
                     brightness=1.0,
-                    save_name=f"{username}.png",
-                    save_dir=con.DAT_DIR)
+                    save_name=qr_name,
+                    save_dir=qr_dir)
 
             with open(qr_code, "rb") as qr_pic:
                 update.message.reply_photo(
@@ -125,13 +126,13 @@ class Wallet(BauerPlugin):
             bis.load_wallet()
             trx = bis.send(send_to, amount)
 
-            url = f"{self.BLCK_EXPL_URL}{Bismuth.convert_trxid(trx)}"
+            url = f"{self.BLCK_EXPL_URL}{Bismuth.url_encode_trxid(trx)}"
 
             if trx:
                 self.tgb.updater.bot.edit_message_text(
                     chat_id=message.chat_id,
                     message_id=message.message_id,
-                    text=f"{emo.CHECK} DONE! [View on Block Explorer]({url})\n",
+                    text=f"{emo.DONE} DONE! [View on Block Explorer]({url})\n",
                     parse_mode=ParseMode.MARKDOWN)
             else:
                 self.tgb.updater.bot.edit_message_text(
@@ -155,6 +156,11 @@ class Wallet(BauerPlugin):
                 message_id=message.message_id,
                 text=f"Balance: `{bis.get_balance()}` BIS",
                 parse_mode=ParseMode.MARKDOWN)
+        else:
+            update.message.reply_text(
+                text=f"{emo.ERROR} Wrong sub-command:\n"
+                     f"{self.get_usage()}",
+                parse_mode=ParseMode.MARKDOWN)
 
     def _wallet_exists(self, update, username):
         if not Bismuth.wallet_exists(username):
@@ -164,21 +170,19 @@ class Wallet(BauerPlugin):
             return False
         return True
 
-    def _accept_terms(self):
-        buttons = [
-            InlineKeyboardButton(
-                "Accept Terms",
-                callback_data="accept")]
+    def _accept_terms(self, username):
+        buttons = [InlineKeyboardButton(
+            "Accept Terms",
+            callback_data=username)]
 
         menu = self.build_menu(buttons)
         return InlineKeyboardMarkup(menu, resize_keyboard=True)
 
     def _callback(self, bot, update):
         query = update.callback_query
-        # TODO: How to make sure that only the real user presses the button?
-        username = query.from_user.username
+        username = update.effective_user["username"]
 
-        if query.data == "accept":
+        if query.data == username:
             self.tgb.db.execute_sql(self.get_sql("accept_terms"))
 
             query.edit_message_text(
@@ -190,11 +194,11 @@ class Wallet(BauerPlugin):
             bis.load_wallet()
 
             query.edit_message_text(
-                f"Hey @{username}, your address is `{bis.get_address()}`",
+                f"Hey @{utl.esc_md(username)}, your address is `{bis.get_address()}`",
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=None)
 
-            bot.answer_callback_query(query.id, text=f"{emo.HEART} Terms Accepted")
+            bot.answer_callback_query(query.id, text=f"{emo.HEART} Wallet created")
 
     def get_usage(self):
         return f"`/{self.get_handle()} create`\n" \

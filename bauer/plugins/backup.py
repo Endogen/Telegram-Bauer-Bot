@@ -41,5 +41,5 @@ class Backup(BauerPlugin):
 
         bot.send_document(
             chat_id=update.effective_user.id,
-            caption=f"{emo.CHECK} Backup created",
+            caption=f"{emo.DONE} Backup created",
             document=open(os.path.join(base_dir, filename), 'rb'))

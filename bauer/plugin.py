@@ -6,7 +6,6 @@ from telegram import ChatAction
 from bauer.config import ConfigManager as Cfg
 
 
-# TODO: Add database for each plugin
 class BauerPluginInterface:
 
     def __enter__(self):
@@ -63,8 +62,8 @@ class BauerPlugin(BauerPluginInterface):
                 bot.send_chat_action(
                     chat_id=user_id,
                     action=ChatAction.TYPING)
-            except Exception as ex:
-                logging.error(f"{ex} - {update}")
+            except Exception as e:
+                logging.error(f"{e} - {update}")
 
             return func(self, bot, update, **kwargs)
         return _send_typing_action
@@ -74,8 +73,15 @@ class BauerPlugin(BauerPluginInterface):
         def _only_owner(self, bot, update, **kwargs):
             if update.effective_user.id in Cfg.get("admin_id"):
                 return func(self, bot, update, **kwargs)
-
         return _only_owner
+
+    @classmethod
+    def save_user(cls, func):
+        def _save_user(self, bot, update, **kwargs):
+            if Cfg.get("database", "use_db"):
+                self.tgb.db.save_user(update.effective_user)
+            return func(self, bot, update, **kwargs)
+        return _save_user
 
     # Handle exceptions (write to log, reply to Telegram message)
     def handle_error(self, error, update, send_error=True):
@@ -87,6 +93,7 @@ class BauerPlugin(BauerPluginInterface):
             update.message.reply_text(msg)
 
     # Bridge to database method
+    # TODO: Do we really need this?
     def get_sql(self, filename):
         return self.tgb.db.get_sql(filename)
 

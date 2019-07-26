@@ -36,6 +36,3 @@ class Help(BauerPlugin):
             text=msg,
             parse_mode=ParseMode.MARKDOWN,
             disable_web_page_preview=True)
-
-    def get_usage(self):
-        return None

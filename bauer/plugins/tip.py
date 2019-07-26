@@ -1,18 +1,28 @@
+import logging
 import bauer.emoji as emo
 import bauer.utils as utl
 
 from telegram import ParseMode
 from bauer.plugin import BauerPlugin, Category
 from bauer.bismuth import Bismuth
+from bauer.config import ConfigManager as Cfg
 
 
 class Tip(BauerPlugin):
 
     DEFAULT_TIP = 1
 
+    def __enter__(self):
+        if Cfg.get("database", "use_db"):
+            if not self.tgb.db.table_exists("tip"):
+                statement = self.tgb.db.get_sql("create_tip")
+                self.tgb.db.execute_sql(statement)
+        return self
+
     def get_handle(self):
         return "tip"
 
+    @BauerPlugin.save_user
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         if not args:
@@ -27,9 +37,9 @@ class Tip(BauerPlugin):
             amount = self.DEFAULT_TIP
         elif len(args) == 2:
             # Tip specified BIS amount
-            amount = args[1]
-
-            if not utl.is_number(amount):
+            try:
+                amount = float(args[1])
+            except:
                 update.message.reply_text(
                     text=f"{emo.ERROR} Specified amount is not valid",
                     parse_mode=ParseMode.MARKDOWN)
@@ -37,7 +47,7 @@ class Tip(BauerPlugin):
         else:
             # Wrong syntax
             update.message.reply_text(
-                text=f"Usage:\n{self.get_usage()}",
+                text=f"{emo.ERROR} Wrong number of arguments:\n{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -45,7 +55,7 @@ class Tip(BauerPlugin):
 
         if not to_user.startswith("@"):
             update.message.reply_text(
-                text=f"Usage:\n{self.get_usage()}",
+                text=f"{emo.ERROR} Username not valid:\n{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -55,29 +65,43 @@ class Tip(BauerPlugin):
         # Check if sender has a wallet
         if not Bismuth.wallet_exists(from_user):
             update.message.reply_text(
-                text=f"No wallet yet, create one with\n`/wallet create`",
+                text=f"{emo.ERROR} Create a wallet first:\n`/wallet create`",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
         # Check if recipient has a wallet
         if not Bismuth.wallet_exists(to_user):
             update.message.reply_text(
-                text=f"User @{utl.esc_md(to_user)} doesn't have a wallet",
+                text=f"{emo.ERROR} User @{utl.esc_md(to_user)} doesn't have a wallet",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
         message = update.message.reply_text(f"{emo.WAIT} Processing...")
 
+        # Load sender wallet
         bis = Bismuth(from_user)
         bis.load_wallet()
 
+        # Check for sufficient funds
+        if float(bis.get_balance()) <= amount:
+            update.message.reply_text(f"{emo.ERROR} Not enough funds")
+            return
+
+        # Process actual tipping
         if bis.tip(to_user, amount):
-            self.tgb.updater.bot.edit_message_text(
+            if Cfg.get("database", "use_db"):
+                # Save tipping in database
+                self._add_tip(from_user, to_user, amount)
+
+            # Send success message
+            bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=f"{emo.CHECK} DONE!")
+                text=f"{emo.DONE} @{to_user} received `{amount}` BIS",
+                parse_mode=ParseMode.MARKDOWN)
         else:
-            self.tgb.updater.bot.edit_message_text(
+            # Send error message
+            bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=f"{emo.ERROR} Something went wrong")
@@ -91,3 +115,8 @@ class Tip(BauerPlugin):
 
     def get_category(self):
         return Category.BISMUTH
+
+    def _add_tip(self, from_user, to_user, amount):
+        """ Saves tipping data in database """
+        statement = self.tgb.db.get_sql("add_tip")
+        self.tgb.db.execute_sql(statement, from_user, to_user, amount)

@@ -10,9 +10,9 @@ from bauer.config import ConfigManager as Cfg
 
 class Restart(BauerPlugin):
 
-    def __init__(self, telegram_bot):
-        super().__init__(telegram_bot)
+    def __enter__(self):
         self._restart_notification()
+        return self
 
     def get_handle(self):
         return "restart"
@@ -35,9 +35,6 @@ class Restart(BauerPlugin):
         time.sleep(0.2)
         os.execl(sys.executable, sys.executable, '-m', m_name, *sys.argv[1:])
 
-    def get_usage(self):
-        return None
-
     # Inform about successful restart
     def _restart_notification(self):
         cls_name = type(self).__name__.lower()
@@ -51,7 +48,7 @@ class Restart(BauerPlugin):
             self.tgb.updater.bot.edit_message_text(
                 chat_id=user_id,
                 message_id=message,
-                text=f"{emo.CHECK} Restarting bot...")
+                text=f"{emo.DONE} Restarting bot...")
         except Exception as e:
             msg = "Not possible to update restart message"
             logging.error(f"{msg}: {e}")

@@ -59,12 +59,12 @@ class TelegramBot:
         # Handle all Telegram related errors
         self.dispatcher.add_error_handler(self._handle_tg_errors)
 
-    # Start the bot --> polling
     def bot_start_polling(self):
+        """ Start the bot in polling mode """
         self.updater.start_polling(clean=True)
 
-    # Start the bot --> webhook
     def bot_start_webhook(self):
+        """ Start the bot in webhook mode """
         self.updater.start_webhook(
             listen=Cfg.get("webhook", "listen"),
             port=Cfg.get("webhook", "port"),
@@ -96,6 +96,7 @@ class TelegramBot:
         for thread in threads:
             thread.join()
 
+        # Execute logic after all plugins loaded
         for plugin in self.plugins:
             plugin.after_plugins_loaded()
 
@@ -124,6 +125,7 @@ class TelegramBot:
                 pass_args=True))
 
     def add_plugin(self, module_name):
+        """ Load a plugin so that it can be used """
         for plugin in self.plugins:
             if type(plugin).__name__.lower() == module_name.lower():
                 return {"success": False, "msg": "Plugin already active"}
@@ -145,6 +147,7 @@ class TelegramBot:
             raise ex
 
     def remove_plugin(self, module_name):
+        """ Unload a plugin so that it can't be used """
         for plugin in self.plugins:
             if type(plugin).__name__.lower() == module_name.lower():
                 try:
@@ -176,19 +179,19 @@ class TelegramBot:
         try:
             self.remove_plugin(class_name)
             self.add_plugin(class_name)
-            update.message.reply_text(f"{emo.CHECK} Plugin loaded successfully")
+            update.message.reply_text(f"{emo.DONE} Plugin loaded successfully")
         except Exception as ex:
             update.message.reply_text(f"{emo.ERROR} {ex}")
 
-    # Handle all telegram and telegram.ext related errors
     def _handle_tg_errors(self, bot, update, error):
+        """ Handle all 'telegram' and 'telegram.ext' related errors """
         cls_name = f"Class: {type(self).__name__}"
         logging.error(f"{error} - {cls_name} - {update}")
 
         if not update:
             return
 
-        error_msg = f"{emo.ERROR} Telegram ERROR: {error}"
+        error_msg = f"{emo.ERROR} *Telegram ERROR*: {error}"
 
         if update.message:
             update.message.reply_text(

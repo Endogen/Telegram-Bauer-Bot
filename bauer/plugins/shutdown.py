@@ -17,9 +17,6 @@ class Shutdown(BauerPlugin):
 
         threading.Thread(target=self._shutdown_thread).start()
 
-    def get_usage(self):
-        return None
-
     def _shutdown_thread(self):
         self.tgb.updater.stop()
         self.tgb.updater.is_idle = False
