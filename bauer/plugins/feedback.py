@@ -9,6 +9,7 @@ class Feedback(BauerPlugin):
     def get_handle(self):
         return "feedback"
 
+    @BauerPlugin.threaded
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
 

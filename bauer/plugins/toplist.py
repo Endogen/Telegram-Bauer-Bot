@@ -10,6 +10,7 @@ class Toplist(BauerPlugin):
     def get_handle(self):
         return "top"
 
+    @BauerPlugin.threaded
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         if not Cfg.get("database", "use_db"):
@@ -27,13 +28,26 @@ class Toplist(BauerPlugin):
 
         args = [s.lower() for s in args]
 
-        if args == "rain":
-            # TODO
+        if args[0] == "rain":
+            # TODO: Implement
+            update.message.reply_text(
+                text="Not yet implemented",
+                parse_mode=ParseMode.MARKDOWN)
             pass
-        elif args == "tip":
+        elif args[0] == "tip":
             statement = self.tgb.db.get_sql("top_tip")
             result = self.tgb.db.execute_sql(statement)
-            # TODO: Work with the result
+
+            msg = str()
+            for data in result["data"]:
+                user = "{:>11}".format(data[0])
+                msg += f"`{data[1]} {user}`\n"
+
+            update.message.reply_text(
+                text=f"*Tip Toplist*\n\n"
+                     f"Who gave the most:\n"
+                     f"{msg}",
+                parse_mode=ParseMode.MARKDOWN)
         else:
             update.message.reply_text(
                 text=f"Usage:\n{self.get_usage()}",

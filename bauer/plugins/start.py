@@ -14,6 +14,7 @@ class Start(BauerPlugin):
     def get_handle(self):
         return "start"
 
+    @BauerPlugin.threaded
     def get_action(self, bot, update, args):
         about_file = os.path.join(con.RES_DIR, self.START_FILENAME)
 

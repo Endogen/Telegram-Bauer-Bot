@@ -25,7 +25,6 @@ class Database:
 
         con.close()
 
-    # TODO: Maybe should be static and then no get_sql method in Plugin?
     def get_sql(self, filename):
         """ Return SQL statement from file """
         cls = inspect.stack()[1][0].f_locals["self"].__class__

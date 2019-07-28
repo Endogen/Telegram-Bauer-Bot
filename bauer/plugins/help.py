@@ -7,6 +7,7 @@ class Help(BauerPlugin):
     def get_handle(self):
         return "help"
 
+    @BauerPlugin.threaded
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         cat_dict = dict()

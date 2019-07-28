@@ -11,6 +11,7 @@ class Admin(BauerPlugin):
     def get_handle(self):
         return "admin"
 
+    @BauerPlugin.threaded
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):

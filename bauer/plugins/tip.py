@@ -1,4 +1,3 @@
-import logging
 import bauer.emoji as emo
 import bauer.utils as utl
 
@@ -22,6 +21,7 @@ class Tip(BauerPlugin):
     def get_handle(self):
         return "tip"
 
+    @BauerPlugin.threaded
     @BauerPlugin.save_user
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
@@ -65,7 +65,7 @@ class Tip(BauerPlugin):
         # Check if sender has a wallet
         if not Bismuth.wallet_exists(from_user):
             update.message.reply_text(
-                text=f"{emo.ERROR} Create a wallet first:\n`/wallet create`",
+                text=f"{emo.ERROR} Create a wallet first with:\n`/wallet create`",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -118,5 +118,6 @@ class Tip(BauerPlugin):
 
     def _add_tip(self, from_user, to_user, amount):
         """ Saves tipping data in database """
-        statement = self.tgb.db.get_sql("add_tip")
-        self.tgb.db.execute_sql(statement, from_user, to_user, amount)
+        if Cfg.get("database", "use_db"):
+            statement = self.tgb.db.get_sql("add_tip")
+            self.tgb.db.execute_sql(statement, from_user, to_user, amount)

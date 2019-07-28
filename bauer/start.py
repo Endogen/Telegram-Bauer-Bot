@@ -26,7 +26,7 @@ class Bauer:
 
         # Create global database
         db_path = self.args.database
-        # TODO: There is always a DB also if we don't need it
+        # TODO: There is always a DB also if we disable it via config
         self.db = Database(db_path)
 
         # Create Telegram bot

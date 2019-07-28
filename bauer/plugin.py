@@ -1,5 +1,6 @@
 import inspect
 import logging
+import threading
 import bauer.emoji as emo
 
 from telegram import ChatAction
@@ -24,6 +25,7 @@ class BauerPluginInterface:
         method = inspect.currentframe().f_code.co_name
         raise NotImplementedError(f"Interface method '{method}' not implemented")
 
+    # TODO: Read .md file from plugins dir and show content
     # How to use the command
     def get_usage(self):
         return None
@@ -36,13 +38,17 @@ class BauerPluginInterface:
     def get_category(self):
         return None
 
-    # Execute logic after all plugins are loaded
-    def after_plugins_loaded(self):
-        return None
 
-
-# TODO: Make plugin run in its own thread?
 class BauerPlugin(BauerPluginInterface):
+
+    @staticmethod
+    def threaded(fn):
+        def wrapper(*args, **kwargs):
+            thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
+            thread.start()
+            return thread
+
+        return wrapper
 
     def __init__(self, telegram_bot):
         super().__init__()
@@ -91,11 +97,6 @@ class BauerPlugin(BauerPluginInterface):
         if send_error and update and update.message:
             msg = f"{emo.ERROR} {error}"
             update.message.reply_text(msg)
-
-    # Bridge to database method
-    # TODO: Do we really need this?
-    def get_sql(self, filename):
-        return self.tgb.db.get_sql(filename)
 
     # Build button-menu for Telegram
     def build_menu(cls, buttons, n_cols=1, header_buttons=None, footer_buttons=None):

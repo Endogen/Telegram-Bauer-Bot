@@ -66,9 +66,4 @@ class Bismuth:
     def get_terms():
         return "Generated wallet is meant to be for tipping and should only " \
                "hold small amounts of coins. Bismuth developers have access " \
-               "to the private key of the address."
-
-    @staticmethod
-    def terms_accepted(username):
-        # TODO: Save to DB that user accepted
-        pass
+               "to the private key of your address."

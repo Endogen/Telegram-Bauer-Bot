@@ -1,2 +1,2 @@
-INSERT INTO users (user_id, first_name, last_name, username, language)
+INSERT INTO users (user_id, username, first_name, last_name, language)
 VALUES (?, ?, ?, ?, ?)

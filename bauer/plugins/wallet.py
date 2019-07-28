@@ -8,10 +8,10 @@ from bismuthclient.bismuthutil import BismuthUtil
 from telegram.ext import CallbackQueryHandler
 from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from bauer.plugin import BauerPlugin, Category
+from bauer.config import ConfigManager as Cfg
 from bauer.bismuth import Bismuth
 
 
-# TODO: Add address book
 class Wallet(BauerPlugin):
 
     BLCK_EXPL_URL = "https://bismuth.online/search?quicksearch="
@@ -19,11 +19,18 @@ class Wallet(BauerPlugin):
     def __enter__(self):
         self.tgb.dispatcher.add_handler(
             CallbackQueryHandler(self._callback))
+
+        if Cfg.get("database", "use_db"):
+            if not self.tgb.db.table_exists("terms"):
+                statement = self.tgb.db.get_sql("create_terms")
+                self.tgb.db.execute_sql(statement)
+
         return self
 
     def get_handle(self):
         return "wallet"
 
+    @BauerPlugin.threaded
     @BauerPlugin.save_user
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
@@ -132,7 +139,8 @@ class Wallet(BauerPlugin):
                 self.tgb.updater.bot.edit_message_text(
                     chat_id=message.chat_id,
                     message_id=message.message_id,
-                    text=f"{emo.DONE} DONE! [View on Block Explorer]({url})\n",
+                    text=f"{emo.DONE} Done! [View on Block Explorer]({url})\n"
+                         f"(Available after ~1 minute)",
                     parse_mode=ParseMode.MARKDOWN)
             else:
                 self.tgb.updater.bot.edit_message_text(
@@ -165,7 +173,7 @@ class Wallet(BauerPlugin):
     def _wallet_exists(self, update, username):
         if not Bismuth.wallet_exists(username):
             update.message.reply_text(
-                text=f"Create a wallet first with\n`/{self.get_handle()} create`",
+                text=f"Create a wallet first with:\n`/{self.get_handle()} create`",
                 parse_mode=ParseMode.MARKDOWN)
             return False
         return True
@@ -183,7 +191,7 @@ class Wallet(BauerPlugin):
         username = update.effective_user["username"]
 
         if query.data == username:
-            self.tgb.db.execute_sql(self.get_sql("accept_terms"))
+            self._add_terms(username)
 
             query.edit_message_text(
                 f"{emo.WAIT} Generating wallet...",
@@ -212,3 +220,9 @@ class Wallet(BauerPlugin):
 
     def get_category(self):
         return Category.BISMUTH
+
+    def _add_terms(self, username):
+        """ Add flag that user accepted terms """
+        if Cfg.get("database", "use_db"):
+            statement = self.tgb.db.get_sql("add_terms")
+            self.tgb.db.execute_sql(statement, username, 1)

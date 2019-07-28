@@ -14,6 +14,7 @@ class Backup(BauerPlugin):
     def get_handle(self):
         return "backup"
 
+    @BauerPlugin.threaded
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):

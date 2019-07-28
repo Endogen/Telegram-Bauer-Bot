@@ -12,32 +12,24 @@ from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 from telegram.error import InvalidToken
 
 
-def threaded(fn):
-    def wrapper(*args, **kwargs):
-        thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
-        thread.start()
-        return thread
-
-    return wrapper
-
-
 class TelegramBot:
 
     plugins = list()
     bismuth = None
 
     def __init__(self, bot_token, bot_db):
-        self.token = bot_token
+        self._token = bot_token
+        # TODO: Make database private and expose methods to BauerPlugin or TelegramBot
         self.db = bot_db
 
-        read_timeout = Cfg.get("telegram", "read_timeout")
-        connect_timeout = Cfg.get("telegram", "connect_timeout")
+        _read_timeout = Cfg.get("telegram", "read_timeout")
+        _connect_timeout = Cfg.get("telegram", "connect_timeout")
 
         kwargs = dict()
-        if read_timeout:
-            kwargs["read_timeout"] = read_timeout
-        if connect_timeout:
-            kwargs["connect_timeout"] = connect_timeout
+        if _read_timeout:
+            kwargs["read_timeout"] = _read_timeout
+        if _connect_timeout:
+            kwargs["connect_timeout"] = _connect_timeout
 
         try:
             self.updater = Updater(bot_token, request_kwargs=kwargs)
@@ -68,12 +60,12 @@ class TelegramBot:
         self.updater.start_webhook(
             listen=Cfg.get("webhook", "listen"),
             port=Cfg.get("webhook", "port"),
-            url_path=self.token,
+            url_path=self._token,
             key=Cfg.get("webhook", "privkey_path"),
             cert=Cfg.get("webhook", "cert_path"),
             webhook_url=f"{Cfg.get('webhook', 'url')}:"
                         f"{Cfg.get('webhook', 'port')}/"
-                        f"{self.token}")
+                        f"{self._token}")
 
     # Go in idle mode
     def bot_idle(self):
@@ -81,26 +73,14 @@ class TelegramBot:
 
     def _load_plugins(self):
         """ Load all plugins in the 'plugins' folder """
-        threads = list()
-
         for _, _, files in os.walk(os.path.join(con.SRC_DIR, con.PLG_DIR)):
             for file in files:
                 if not file.lower().endswith(".py"):
                     continue
                 if file.startswith("_"):
                     continue
+                self._load_plugin(file)
 
-                threads.append(self._load_plugin(file))
-
-        # Make sure that all plugins are loaded
-        for thread in threads:
-            thread.join()
-
-        # Execute logic after all plugins loaded
-        for plugin in self.plugins:
-            plugin.after_plugins_loaded()
-
-    @threaded
     def _load_plugin(self, file):
         """ Load a single plugin """
         try:
