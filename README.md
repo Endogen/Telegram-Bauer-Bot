@@ -6,7 +6,7 @@ The bot is build around the [python-telegram-bot](https://github.com/python-tele
 
 ### General bot features
 * Every command is a plugin that can be enabled / disabled without restarting the bot
-* Every command can be updated without restarting the bot by drag & dropping the plugin implementation into the bot chat (admins only)
+* Every command can be updated without restarting the bot by drag & dropping the plugin implementation into the bot chat
 * Bot can restart and shutdown via commands 
 * Bot can be used with or without SQLite database
 * Bot can be administered by more then one user
@@ -27,7 +27,7 @@ This file holds the configuration for the bot. You have to at least edit the val
 - __webhook - privkey_path__: Required only for webhook mode. Path to private key  (.pem file).
 - __webhook - cert_path__: Required only for webhook mode. Path to certificate (.pem file).
 - __webhook - url__: Required only for webhook mode. URL under which the bot is hosted.
-- __use_db__: If `true` then a new database file (SQLite) will be generated in the `data` folder. If `false`, no database will be used.
+- __database__ - __use_db__: If `true` then a new database file (SQLite) will be generated in the `data` folder. If `false`, no database will be used.
 
 ### token.json
 This file holds the Telegram bot token. You have to provide one and you will get it in a conversation with Telegram bot [@BotFather](https://t.me/BotFather) while registering your bot.
@@ -94,7 +94,7 @@ which will kill __every__ Python 3.7 process that is currently running.
 ### Available commands
 ##### Bismuth
 ```
-/rain - Rain BIS coins (*NOT IMPLEMENTED YET*)
+/rain - Rain BIS coins (NOT IMPLEMENTED YET)
 /tip - Tip BIS coins
 /top - Show toplist for /rain and /tip
 /wallet - Create wallet, show address, deposit / withdraw BIS coins
