@@ -44,7 +44,7 @@ class Bauer:
         parser.add_argument(
             "-cfg",
             dest="config",
-            help="path to conf file",
+            help="path to config file",
             default=os.path.join(con.CFG_DIR, con.CFG_FILE),
             required=False,
             metavar="FILE")
@@ -63,7 +63,7 @@ class Bauer:
             "--no-database",
             dest="savedata",
             action="store_false",
-            help="save command history to database",
+            help="don't use database",
             required=False,
             default=True)
 
@@ -98,7 +98,7 @@ class Bauer:
         parser.add_argument(
             "-db",
             dest="database",
-            help="path to SQLite database file",
+            help="path to database file",
             default=os.path.join(con.DAT_DIR, con.DAT_FILE),
             required=False,
             metavar="FILE")
@@ -107,7 +107,7 @@ class Bauer:
         parser.add_argument(
             "-tkn",
             dest="token",
-            help="Telegram bot token",
+            help="set Telegram bot token",
             required=False,
             default=None)
 
