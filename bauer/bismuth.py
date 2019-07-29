@@ -38,6 +38,7 @@ class Bismuth:
 
     @staticmethod
     def get_wallet_path(username):
+        os.makedirs(con.DER_DIR, exist_ok=True)
         return os.path.join(con.DER_DIR, f"{username}.der")
 
     @staticmethod

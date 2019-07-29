@@ -45,6 +45,7 @@ def bool2str(b):
     return "Yes" if b else "No"
 
 
+# TODO: Use that in 'rain' plugin
 def split_msg(msg, max_len=None, split_char="\n", only_one=False):
     """ Restrict message length to max characters as defined by Telegram """
     if not max_len:

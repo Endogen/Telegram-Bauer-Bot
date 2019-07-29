@@ -1,7 +1,6 @@
 import os
 import logging
 import importlib
-import threading
 import bauer.emoji as emo
 import bauer.constants as con
 
@@ -17,9 +16,9 @@ class TelegramBot:
     plugins = list()
     bismuth = None
 
+    # TODO: Make database private and expose methods to BauerPlugin or TelegramBot
     def __init__(self, bot_token, bot_db):
         self._token = bot_token
-        # TODO: Make database private and expose methods to BauerPlugin or TelegramBot
         self.db = bot_db
 
         _read_timeout = Cfg.get("telegram", "read_timeout")

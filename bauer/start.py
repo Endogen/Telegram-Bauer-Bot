@@ -25,9 +25,11 @@ class Bauer:
         self._init_logger(log_path, log_level)
 
         # Create global database
-        db_path = self.args.database
-        # TODO: There is always a DB also if we disable it via config
-        self.db = Database(db_path)
+        if Cfg.get("database", "use_db"):
+            db_path = self.args.database
+            self.db = Database(db_path)
+        else:
+            self.db = None
 
         # Create Telegram bot
         bot_token = self._get_bot_token()

@@ -1,6 +1,7 @@
 import bauer.constants as con
 import bauer.utils as utl
 import bauer.emoji as emo
+import logging
 import os
 
 from MyQR import myqr
@@ -198,15 +199,27 @@ class Wallet(BauerPlugin):
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=None)
 
-            bis = Bismuth(username)
-            bis.load_wallet()
+            try:
+                bis = Bismuth(username)
+                bis.load_wallet()
+            except Exception as e:
+                logging.error(e)
+                bis = None
 
-            query.edit_message_text(
-                f"Hey @{utl.esc_md(username)}, your address is `{bis.get_address()}`",
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=None)
+            if bis:
+                query.edit_message_text(
+                    f"Hey @{utl.esc_md(username)}, your address is `{bis.get_address()}`",
+                    parse_mode=ParseMode.MARKDOWN)
+                bot.answer_callback_query(query.id, text=f"{emo.HEART} Wallet created")
+            else:
+                query.edit_message_text(f"{emo.ERROR} Something went wrong...")
+                bot.answer_callback_query(query.id, text=f"{emo.ERROR} No wallet created")
 
-            bot.answer_callback_query(query.id, text=f"{emo.HEART} Wallet created")
+    def _add_terms(self, username):
+        """ Add flag that user accepted terms """
+        if Cfg.get("database", "use_db"):
+            statement = self.tgb.db.get_sql("add_terms")
+            self.tgb.db.execute_sql(statement, username, 1)
 
     def get_usage(self):
         return f"`/{self.get_handle()} create`\n" \
@@ -220,9 +233,3 @@ class Wallet(BauerPlugin):
 
     def get_category(self):
         return Category.BISMUTH
-
-    def _add_terms(self, username):
-        """ Add flag that user accepted terms """
-        if Cfg.get("database", "use_db"):
-            statement = self.tgb.db.get_sql("add_terms")
-            self.tgb.db.execute_sql(statement, username, 1)
