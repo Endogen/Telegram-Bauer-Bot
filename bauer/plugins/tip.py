@@ -53,6 +53,7 @@ class Tip(BauerPlugin):
 
         to_user = args[0]
 
+        # Check if username starts with @
         if not to_user.startswith("@"):
             update.message.reply_text(
                 text=f"{emo.ERROR} Username not valid:\n{self.get_usage()}",
@@ -78,7 +79,7 @@ class Tip(BauerPlugin):
 
         message = update.message.reply_text(f"{emo.WAIT} Processing...")
 
-        # Load sender wallet
+        # Init sender wallet
         bis = Bismuth(from_user)
         bis.load_wallet()
 
@@ -91,7 +92,8 @@ class Tip(BauerPlugin):
         if bis.tip(to_user, amount):
             if Cfg.get("database", "use_db"):
                 # Save tipping in database
-                self._add_tip(from_user, to_user, amount)
+                statement = self.tgb.db.get_sql("add_tip")
+                self.tgb.db.execute_sql(statement, from_user, to_user, amount)
 
             # Send success message
             bot.edit_message_text(
@@ -115,9 +117,3 @@ class Tip(BauerPlugin):
 
     def get_category(self):
         return Category.BISMUTH
-
-    def _add_tip(self, from_user, to_user, amount):
-        """ Saves tipping data in database """
-        if Cfg.get("database", "use_db"):
-            statement = self.tgb.db.get_sql("add_tip")
-            self.tgb.db.execute_sql(statement, from_user, to_user, amount)
