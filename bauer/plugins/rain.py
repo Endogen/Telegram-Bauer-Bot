@@ -6,6 +6,7 @@ from bauer.config import ConfigManager as Cfg
 class Rain(BauerPlugin):
 
     def __enter__(self):
+        # TODO: Remove the check and move it to BauerPlugin or TelegramBot after DB methods exposed
         if Cfg.get("database", "use_db"):
             if not self.tgb.db.table_exists("rain"):
                 statement = self.tgb.db.get_sql("create_rain")
