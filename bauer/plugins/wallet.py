@@ -9,7 +9,6 @@ from bismuthclient.bismuthutil import BismuthUtil
 from telegram.ext import CallbackQueryHandler
 from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from bauer.plugin import BauerPlugin, Category
-from bauer.config import ConfigManager as Cfg
 from bauer.bismuth import Bismuth
 
 
@@ -18,13 +17,11 @@ class Wallet(BauerPlugin):
     BLCK_EXPL_URL = "https://bismuth.online/search?quicksearch="
 
     def __enter__(self):
-        self.tgb.dispatcher.add_handler(
+        self.tg_bot.dispatcher.add_handler(
             CallbackQueryHandler(self._callback))
 
-        if Cfg.get("database", "use_db"):
-            if not self.tgb.db.table_exists("terms"):
-                statement = self.tgb.db.get_sql("create_terms")
-                self.tgb.db.execute_sql(statement)
+        sql = self.get_sql("create_terms")
+        self.execute_sql(sql)
 
         return self
 
@@ -32,7 +29,6 @@ class Wallet(BauerPlugin):
         return "wallet"
 
     @BauerPlugin.threaded
-    @BauerPlugin.save_user
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         if not args:
@@ -45,7 +41,7 @@ class Wallet(BauerPlugin):
         args = [s.lower() for s in args]
         arg = args[0]
 
-        # CREATE WALLET
+        # ---- CREATE WALLET ----
         if arg == "create":
             if Bismuth.wallet_exists(username):
                 update.message.reply_text(
@@ -56,9 +52,9 @@ class Wallet(BauerPlugin):
             update.message.reply_text(
                 text=Bismuth.get_terms(),
                 parse_mode=ParseMode.MARKDOWN,
-                reply_markup=self._accept_terms(username))
+                reply_markup=self._terms_keyboard(username))
 
-        # SHOW ADDRESS
+        # ---- SHOW ADDRESS ----
         elif arg == "address":
             if not self._wallet_exists(update, username):
                 return
@@ -69,7 +65,7 @@ class Wallet(BauerPlugin):
                 text=f"Your BIS address is `{address}`",
                 parse_mode=ParseMode.MARKDOWN)
 
-        # DEPOSIT
+        # ---- DEPOSIT ----
         elif arg == "deposit":
             if not self._wallet_exists(update, username):
                 return
@@ -99,7 +95,7 @@ class Wallet(BauerPlugin):
                     caption=f"`{address}`",
                     parse_mode=ParseMode.MARKDOWN)
 
-        # WITHDRAW
+        # ---- WITHDRAW ----
         elif arg == "withdraw":
             if not self._wallet_exists(update, username):
                 return
@@ -137,18 +133,19 @@ class Wallet(BauerPlugin):
             url = f"{self.BLCK_EXPL_URL}{Bismuth.url_encode_trxid(trx)}"
 
             if trx:
-                self.tgb.updater.bot.edit_message_text(
+                self.tg_bot.updater.bot.edit_message_text(
                     chat_id=message.chat_id,
                     message_id=message.message_id,
                     text=f"{emo.DONE} Done! [View on Block Explorer]({url})\n"
                          f"(Available after ~1 minute)",
                     parse_mode=ParseMode.MARKDOWN)
             else:
-                self.tgb.updater.bot.edit_message_text(
+                self.tg_bot.updater.bot.edit_message_text(
                     chat_id=message.chat_id,
                     message_id=message.message_id,
                     text=f"{emo.ERROR} Not able to send Transaction")
-        # BALANCE
+
+        # ---- BALANCE ----
         elif arg == "balance":
             if not self._wallet_exists(update, username):
                 return
@@ -160,11 +157,13 @@ class Wallet(BauerPlugin):
             bis = Bismuth(username)
             bis.load_wallet()
 
-            self.tgb.updater.bot.edit_message_text(
+            self.tg_bot.updater.bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=f"Balance: `{bis.get_balance()}` BIS",
                 parse_mode=ParseMode.MARKDOWN)
+
+        # ---- Everything else ----
         else:
             update.message.reply_text(
                 text=f"{emo.ERROR} Wrong sub-command:\n"
@@ -179,12 +178,12 @@ class Wallet(BauerPlugin):
             return False
         return True
 
-    def _accept_terms(self, username):
+    def _terms_keyboard(self, username):
         buttons = [InlineKeyboardButton(
             "Accept Terms",
             callback_data=username)]
 
-        menu = self.build_menu(buttons)
+        menu = utl.build_menu(buttons)
         return InlineKeyboardMarkup(menu, resize_keyboard=True)
 
     def _callback(self, bot, update):
@@ -192,7 +191,7 @@ class Wallet(BauerPlugin):
         username = update.effective_user["username"]
 
         if query.data == username:
-            self._add_terms(username)
+            self._terms_accepted(username)
 
             query.edit_message_text(
                 f"{emo.WAIT} Generating wallet...",
@@ -215,11 +214,10 @@ class Wallet(BauerPlugin):
                 query.edit_message_text(f"{emo.ERROR} Something went wrong...")
                 bot.answer_callback_query(query.id, text=f"{emo.ERROR} No wallet created")
 
-    def _add_terms(self, username):
+    def _terms_accepted(self, username):
         """ Add flag that user accepted terms """
-        if Cfg.get("database", "use_db"):
-            statement = self.tgb.db.get_sql("add_terms")
-            self.tgb.db.execute_sql(statement, username, 1)
+        statement = self.get_sql("insert_terms")
+        self.execute_sql(statement, username, 1)
 
     def get_usage(self):
         return f"`/{self.get_handle()} create`\n" \

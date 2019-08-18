@@ -1,5 +1,6 @@
-from telegram import ParseMode
 import bauer.emoji as emo
+
+from telegram import ParseMode
 from bauer.config import ConfigManager as Cfg
 from bauer.plugin import BauerPlugin, Category
 

@@ -16,10 +16,8 @@ class TelegramBot:
     plugins = list()
     bismuth = None
 
-    # TODO: Make database private and expose methods to BauerPlugin or TelegramBot
-    def __init__(self, bot_token, bot_db):
+    def __init__(self, bot_token):
         self._token = bot_token
-        self.db = bot_db
 
         _read_timeout = Cfg.get("telegram", "read_timeout")
         _connect_timeout = Cfg.get("telegram", "connect_timeout")
@@ -31,7 +29,7 @@ class TelegramBot:
             kwargs["connect_timeout"] = _connect_timeout
 
         try:
-            self.updater = Updater(bot_token, request_kwargs=kwargs)
+            self.updater = Updater(self._token, request_kwargs=kwargs)
         except InvalidToken as e:
             cls_name = f"Class: {type(self).__name__}"
             logging.error(f"{repr(e)} - {cls_name}")
@@ -69,39 +67,6 @@ class TelegramBot:
     # Go in idle mode
     def bot_idle(self):
         self.updater.idle()
-
-    def _load_plugins(self):
-        """ Load all plugins in the 'plugins' folder """
-        for _, _, files in os.walk(os.path.join(con.SRC_DIR, con.PLG_DIR)):
-            for file in files:
-                if not file.lower().endswith(".py"):
-                    continue
-                if file.startswith("_"):
-                    continue
-                self._load_plugin(file)
-
-    def _load_plugin(self, file):
-        """ Load a single plugin """
-        try:
-            module_name = file[:-3]
-            module_path = f"{con.SRC_DIR}.{con.PLG_DIR}.{module_name}"
-            module = importlib.import_module(module_path)
-
-            with getattr(module, module_name.capitalize())(self) as plugin:
-                self._add_handler(plugin)
-                self.plugins.append(plugin)
-                logging.info(f"Plugin '{type(plugin).__name__}' added")
-        except Exception as ex:
-            msg = f"File '{file}' can't be loaded as a plugin: {ex}"
-            logging.warning(msg)
-
-    def _add_handler(self, plugin):
-        """ Add CommandHandler for given plugin """
-        self.dispatcher.add_handler(
-            CommandHandler(
-                plugin.get_handle(),
-                plugin.get_action,
-                pass_args=True))
 
     def add_plugin(self, module_name):
         """ Load a plugin so that it can be used """
@@ -145,25 +110,61 @@ class TelegramBot:
                     raise ex
         return {"success": True, "msg": "Plugin removed"}
 
+    def _load_plugins(self):
+        """ Load all plugins in the 'plugins' folder """
+        for _, _, files in os.walk(os.path.join(con.SRC_DIR, con.PLG_DIR)):
+            for file in files:
+                if not file.lower().endswith(".py"):
+                    continue
+                if file.startswith("_"):
+                    continue
+                self._load_plugin(file)
+
+    def _load_plugin(self, file):
+        """ Load a single plugin """
+        try:
+            module_name = file[:-3]
+            module_path = f"{con.SRC_DIR}.{con.PLG_DIR}.{module_name}"
+            module = importlib.import_module(module_path)
+
+            with getattr(module, module_name.capitalize())(self) as plugin:
+                self._add_handler(plugin)
+                self.plugins.append(plugin)
+
+                logging.info(f"Plugin '{type(plugin).__name__}' added")
+        except Exception as ex:
+            msg = f"File '{file}' can't be loaded as a plugin: {ex}"
+            logging.warning(msg)
+
+    def _add_handler(self, plugin):
+        """ Add CommandHandler for given plugin """
+        self.dispatcher.add_handler(
+            CommandHandler(
+                plugin.get_handle(),
+                plugin.get_action,
+                pass_args=True))
+
     def _download(self, bot, update):
         if update.effective_user.id not in Cfg.get("admin_id"):
             return
 
-        name = update.message.effective_attachment.file_name
-        file = bot.getFile(update.message.document.file_id)
-        file.download(os.path.join(con.SRC_DIR, con.PLG_DIR, name))
-
-        class_name = name.replace(".py", "")
-
         try:
+            name = update.message.effective_attachment.file_name
+            file = bot.getFile(update.message.document.file_id)
+            file.download(os.path.join(con.SRC_DIR, con.PLG_DIR, name))
+
+            class_name = name.replace(".py", "")
+
             self.remove_plugin(class_name)
             self.add_plugin(class_name)
             update.message.reply_text(f"{emo.DONE} Plugin loaded successfully")
-        except Exception as ex:
-            update.message.reply_text(f"{emo.ERROR} {ex}")
+        except Exception as e:
+            logging.error(e)
+            msg = f"{emo.ERROR} {e}"
+            update.message.reply_text(msg)
 
     def _handle_tg_errors(self, bot, update, error):
-        """ Handle all 'telegram' and 'telegram.ext' related errors """
+        """ Handle errors for module 'telegram' and 'telegram.ext' """
         cls_name = f"Class: {type(self).__name__}"
         logging.error(f"{error} - {cls_name} - {update}")
 

@@ -12,17 +12,14 @@ class Tip(BauerPlugin):
     DEFAULT_TIP = 1
 
     def __enter__(self):
-        if Cfg.get("database", "use_db"):
-            if not self.tgb.db.table_exists("tip"):
-                statement = self.tgb.db.get_sql("create_tip")
-                self.tgb.db.execute_sql(statement)
+        sql = self.get_sql("create_tip")
+        self.execute_sql(sql)
         return self
 
     def get_handle(self):
         return "tip"
 
     @BauerPlugin.threaded
-    @BauerPlugin.save_user
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         if not args:
@@ -92,8 +89,8 @@ class Tip(BauerPlugin):
         if bis.tip(to_user, amount):
             if Cfg.get("database", "use_db"):
                 # Save tipping in database
-                statement = self.tgb.db.get_sql("add_tip")
-                self.tgb.db.execute_sql(statement, from_user, to_user, amount)
+                statement = self.get_sql("insert_tip")
+                self.execute_sql(statement, from_user, to_user, amount)
 
             # Send success message
             bot.edit_message_text(

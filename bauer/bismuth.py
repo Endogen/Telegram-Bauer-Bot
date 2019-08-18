@@ -9,9 +9,14 @@ from bismuthclient.bismuthclient import BismuthClient
 
 class Bismuth:
 
+    TERMS_FILE = "terms.md"
+
     def __init__(self, username):
+        logging.debug(f"Create Bismuth client for user {username}")
         self._client = self._get_client(username)
-        self._client.get_server()
+        logging.debug(f"Get Bismuth server for user {username}")
+        server = self._client.get_server()
+        logging.debug(f"Current server {server}")
 
     def _get_client(self, username):
         wallet_path = self.get_wallet_path(username)
@@ -65,6 +70,8 @@ class Bismuth:
 
     @staticmethod
     def get_terms():
-        return "Generated wallet is meant to be for tipping and should only " \
-               "hold small amounts of coins. Bismuth developers have access " \
-               "to the private key of your address."
+        terms_file = os.path.join(con.RES_DIR, Bismuth.TERMS_FILE)
+        with open(terms_file, "r", encoding="utf8") as file:
+            content = file.readlines()
+
+        return "".join(content)

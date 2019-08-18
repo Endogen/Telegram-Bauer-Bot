@@ -28,18 +28,27 @@ class Toplist(BauerPlugin):
 
         args = [s.lower() for s in args]
 
+        # --- RAIN top-list ----
         if args[0] == "rain":
-            # TODO: Implement
+            # TODO: Implement 'rain'
             update.message.reply_text(
                 text="Not yet implemented",
                 parse_mode=ParseMode.MARKDOWN)
             pass
+
+        # ---- TIP top-list ----
         elif args[0] == "tip":
-            statement = self.tgb.db.get_sql("top_tip")
-            result = self.tgb.db.execute_sql(statement)
+            sql = self.get_sql("top_tip")
+            res = self.execute_sql(sql, db="tip")
+
+            if not res["success"]:
+                update.message.reply_text(
+                    text=f"{emo.ERROR} {res['data']}",
+                    parse_mode=ParseMode.MARKDOWN)
+                return
 
             msg = str()
-            for data in result["data"]:
+            for data in res["data"]:
                 user = "{:>11}".format(data[0])
                 msg += f"`{data[1]} {user}`\n"
 
@@ -48,6 +57,8 @@ class Toplist(BauerPlugin):
                      f"Who gave the most:\n"
                      f"{msg}",
                 parse_mode=ParseMode.MARKDOWN)
+
+        # ---- Everything else ----
         else:
             update.message.reply_text(
                 text=f"Usage:\n{self.get_usage()}",

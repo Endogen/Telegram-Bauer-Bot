@@ -1,45 +1,157 @@
+import os
+import sqlite3
 import inspect
 import logging
 import threading
-import bauer.emoji as emo
+import bauer.constants as c
 
 from telegram import ChatAction
 from bauer.config import ConfigManager as Cfg
 
 
+# TODO: Completely rework structure: one folder per plugin. In there all other folders like SQL, RES, ...
 class BauerPluginInterface:
 
     def __enter__(self):
+        """ This method gets executed before the plugin gets loaded """
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """ This method gets executed after the plugin gets loaded """
         pass
 
-    # command string that triggers the plugin
     def get_handle(self):
+        """ Command string that triggers the plugin """
         method = inspect.currentframe().f_code.co_name
         raise NotImplementedError(f"Interface method '{method}' not implemented")
 
-    # Logic that gets executed if command is triggered
     def get_action(self, bot, update, args):
+        """ Logic that gets executed if command gets triggered """
         method = inspect.currentframe().f_code.co_name
         raise NotImplementedError(f"Interface method '{method}' not implemented")
 
     # TODO: Read .md file from plugins dir and show content
-    # How to use the command
     def get_usage(self):
+        """ Show how to use the command """
         return None
 
-    # Short description what the command does
     def get_description(self):
+        """ Short description what the command does """
         return None
 
-    # Category for command
     def get_category(self):
+        """ Category for command """
         return None
 
 
 class BauerPlugin(BauerPluginInterface):
+
+    def __init__(self, tg_bot):
+        super().__init__()
+        self.tg_bot = tg_bot
+
+        # Preparation for database creation
+        cls_name = type(self).__name__.lower()
+        self._db_path = os.path.join(c.DAT_DIR, f"{cls_name}.db")
+        data_dir = os.path.dirname(self._db_path)
+        os.makedirs(data_dir, exist_ok=True)
+
+    def add_plugin(self, module_name):
+        self.tg_bot.add_plugin(module_name)
+
+    def remove_plugin(self, module_name):
+        self.tg_bot.remove_plugin(module_name)
+
+    # TODO: 'from_plugin' is unused
+    def get_res(self, filename, from_plugin=True):
+        """ Return content from file """
+        try:
+            resource_file = os.path.join(c.RES_DIR, filename)
+            with open(resource_file, "r", encoding="utf8") as f:
+                content = f.readlines()
+        except Exception as e:
+            logging.error(e)
+            return None
+
+        return "".join(content)
+
+    def get_sql(self, filename, from_plugin=True):
+        """ Return SQL statement from file """
+        cls_name = type(self).__name__.lower()
+        filename = f"{filename}.sql"
+
+        if from_plugin:
+            path = os.path.join(c.SQL_DIR, cls_name, filename)
+        else:
+            path = os.path.join(c.SQL_DIR, filename)
+
+        try:
+            with open(path) as f:
+                return f.read()
+        except Exception as e:
+            logging.error(e)
+            raise e
+
+    def execute_sql(self, sql, *args, db=None):
+        """ Execute raw SQL statement on database for given plugin """
+        res = {"success": None, "data": None}
+
+        # Check if database usage is enabled
+        if not Cfg.get("database", "use_db"):
+            res["data"] = "Database disabled"
+            res["success"] = False
+            return res
+
+        # Check if table already exists
+        if sql.lower().startswith("create table"):
+            if self._table_exists(sql.split()[2]):
+                res["data"] = "Table already present"
+                res["success"] = True
+                return res
+
+        if db:
+            db_name = f"{db.lower()}.db"
+            db_path = os.path.join(c.DAT_DIR, db_name)
+        else:
+            db_path = self._db_path
+
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+
+        try:
+            cur.execute(sql, args)
+            con.commit()
+            res["data"] = cur.fetchall()
+            res["success"] = True
+        except Exception as e:
+            logging.error(e)
+            res["data"] = str(e)
+            res["success"] = False
+
+        con.close()
+        return res
+
+    def _table_exists(self, table_name, db=None):
+        """ Return TRUE if table exists, otherwise FALSE """
+        if db:
+            db_name = f"{db.lower()}.db"
+            db_path = os.path.join(c.DAT_DIR, db_name)
+        else:
+            db_path = self._db_path
+
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
+        exists = False
+
+        try:
+            statement = self.get_sql("table_exists", from_plugin=False)
+            if cur.execute(statement, [table_name]).fetchone():
+                exists = True
+        except Exception as e:
+            logging.error(e)
+
+        con.close()
+        return exists
 
     @staticmethod
     def threaded(fn):
@@ -47,12 +159,7 @@ class BauerPlugin(BauerPluginInterface):
             thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
             thread.start()
             return thread
-
         return wrapper
-
-    def __init__(self, telegram_bot):
-        super().__init__()
-        self.tgb = telegram_bot
 
     @classmethod
     def send_typing(cls, func):
@@ -80,34 +187,6 @@ class BauerPlugin(BauerPluginInterface):
             if update.effective_user.id in Cfg.get("admin_id"):
                 return func(self, bot, update, **kwargs)
         return _only_owner
-
-    @classmethod
-    def save_user(cls, func):
-        def _save_user(self, bot, update, **kwargs):
-            if Cfg.get("database", "use_db"):
-                self.tgb.db.save_user(update.effective_user)
-            return func(self, bot, update, **kwargs)
-        return _save_user
-
-    # Handle exceptions (write to log, reply to Telegram message)
-    def handle_error(self, error, update, send_error=True):
-        cls_name = f"Class: {type(self).__name__}"
-        logging.error(f"{repr(error)} - {error} - {cls_name} - {update}")
-
-        if send_error and update and update.message:
-            msg = f"{emo.ERROR} {error}"
-            update.message.reply_text(msg)
-
-    # Build button-menu for Telegram
-    def build_menu(cls, buttons, n_cols=1, header_buttons=None, footer_buttons=None):
-        menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
-
-        if header_buttons:
-            menu.insert(0, header_buttons)
-        if footer_buttons:
-            menu.append(footer_buttons)
-
-        return menu
 
 
 # Categories for commands

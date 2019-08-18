@@ -1,3 +1,4 @@
+import logging
 import bauer.utils as utl
 import bauer.emoji as emo
 
@@ -24,13 +25,13 @@ class Admin(BauerPlugin):
         args = [s.lower() for s in args]
         command = args[0]
 
-        # Execute raw SQL
+        # ---- Execute raw SQL ----
         if command == "sql":
             if Cfg.get("database", "use_db"):
                 args.pop(0)
 
                 sql = " ".join(args)
-                res = self.tgb.db.execute_sql(sql)
+                res = self.execute_sql(sql)
 
                 if res["success"]:
                     if res["data"]:
@@ -44,7 +45,7 @@ class Admin(BauerPlugin):
             else:
                 update.message.reply_text(f"{emo.INFO} Database not enabled")
 
-        # Change configuration
+        # ---- Change configuration ----
         elif command == "cfg":
             args.pop(0)
             v = args[-1]
@@ -66,22 +67,25 @@ class Admin(BauerPlugin):
             try:
                 Cfg.set(v, *args)
             except Exception as e:
-                return self.handle_error(e, update)
+                logging.error(e)
+                msg = f"{emo.ERROR} {e}"
+                update.message.reply_text(msg)
+                return
 
             update.message.reply_text(f"{emo.DONE} Config changed")
 
-        # Manage plugins
+        # ---- Manage plugins ----
         elif command == "plg":
             args.pop(0)
 
             try:
                 # Add plugin
                 if args[0].lower() == "add":
-                    res = self.tgb.add_plugin(args[1])
+                    res = self.add_plugin(args[1])
 
                 # Remove plugin
                 elif args[0].lower() == "remove":
-                    res = self.tgb.remove_plugin(args[1])
+                    res = self.remove_plugin(args[1])
 
                 # Wrong sub-command
                 else:

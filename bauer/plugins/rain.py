@@ -1,21 +1,18 @@
 from bauer.plugin import BauerPlugin, Category
 from telegram import ParseMode
-from bauer.config import ConfigManager as Cfg
 
 
+# TODO: Use 'split_msg' from utils here
 class Rain(BauerPlugin):
 
     def __enter__(self):
-        if Cfg.get("database", "use_db"):
-            if not self.tgb.db.table_exists("rain"):
-                statement = self.tgb.db.get_sql("create_rain")
-                self.tgb.db.execute_sql(statement)
+        statement = self.get_sql("create_rain")
+        self.execute_sql(statement)
         return self
 
     def get_handle(self):
         return "rain"
 
-    @BauerPlugin.save_user
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         if not args:

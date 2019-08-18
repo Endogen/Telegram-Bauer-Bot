@@ -4,7 +4,6 @@ import logging
 import bauer.constants as con
 
 from argparse import ArgumentParser
-from bauer.database import Database
 from bauer.telegrambot import TelegramBot
 from bauer.config import ConfigManager as Cfg
 from logging.handlers import TimedRotatingFileHandler
@@ -17,68 +16,31 @@ class Bauer:
         self.args = self._parse_args()
 
         # Load config file
-        Cfg(self.args.config)
+        Cfg(os.path.join(con.CFG_DIR, con.CFG_FILE))
 
         # Set up logging
-        log_path = self.args.logfile
-        log_level = self.args.loglevel
-        self._init_logger(log_path, log_level)
-
-        # Create global database
-        if Cfg.get("database", "use_db"):
-            db_path = self.args.database
-            self.db = Database(db_path)
-        else:
-            self.db = None
+        self._init_logger()
 
         # Create Telegram bot
-        bot_token = self._get_bot_token()
-        self.tg = TelegramBot(bot_token, self.db)
+        self.tg = TelegramBot(self._get_bot_token())
 
     # Parse arguments
     def _parse_args(self):
         desc = "Telegram bot for Bismuth (BIS) cryptocurrency"
         parser = ArgumentParser(description=desc)
 
-        # Config file path
-        parser.add_argument(
-            "-cfg",
-            dest="config",
-            help="path to config file",
-            default=os.path.join(con.CFG_DIR, con.CFG_FILE),
-            required=False,
-            metavar="FILE")
-
         # Save logfile
         parser.add_argument(
-            "--no-logfile",
+            "--no-log",
             dest="savelog",
             action="store_false",
             help="don't save log-files",
             required=False,
             default=True)
 
-        # Use database
-        parser.add_argument(
-            "--no-database",
-            dest="savedata",
-            action="store_false",
-            help="don't use database",
-            required=False,
-            default=True)
-
-        # Logfile path
-        parser.add_argument(
-            "-log",
-            dest="logfile",
-            help="path to logfile",
-            default=os.path.join(con.LOG_DIR, con.LOG_FILE),
-            required=False,
-            metavar="FILE")
-
         # Log level
         parser.add_argument(
-            "-lvl",
+            "-log",
             dest="loglevel",
             type=int,
             choices=[0, 10, 20, 30, 40, 50],
@@ -88,20 +50,11 @@ class Bauer:
 
         # Module log level
         parser.add_argument(
-            "-mlvl",
+            "-mlog",
             dest="mloglevel",
             help="set log level for a module",
             default=None,
             required=False)
-
-        # Database path
-        parser.add_argument(
-            "-db",
-            dest="database",
-            help="path to database file",
-            default=os.path.join(con.DAT_DIR, con.DAT_FILE),
-            required=False,
-            metavar="FILE")
 
         # Bot token
         parser.add_argument(
@@ -111,45 +64,37 @@ class Bauer:
             required=False,
             default=None)
 
-        # Webhook
-        parser.add_argument(
-            "--webhook",
-            dest="webhook",
-            action="store_true",
-            help="use webhook instead of polling",
-            required=False,
-            default=False)
-
         return parser.parse_args()
 
     # Configure logging
-    def _init_logger(self, logfile, level):
+    def _init_logger(self):
         logger = logging.getLogger()
-        logger.setLevel(level)
+        logger.setLevel(self.args.loglevel)
 
+        log_file = os.path.join(con.LOG_DIR, con.LOG_FILE)
         log_format = "[%(asctime)s %(levelname)s %(filename)s:%(lineno)s %(funcName)s()] %(message)s"
 
         # Log to console
         console_log = logging.StreamHandler()
         console_log.setFormatter(logging.Formatter(log_format))
-        console_log.setLevel(level)
+        console_log.setLevel(self.args.loglevel)
 
         logger.addHandler(console_log)
 
         # Save logs if enabled
         if self.args.savelog:
             # Create 'log' directory if not present
-            log_path = os.path.dirname(logfile)
+            log_path = os.path.dirname(log_file)
             if not os.path.exists(log_path):
                 os.makedirs(log_path)
 
             file_log = TimedRotatingFileHandler(
-                logfile,
+                log_file,
                 when="H",
                 encoding="utf-8")
 
             file_log.setFormatter(logging.Formatter(log_format))
-            file_log.setLevel(level)
+            file_log.setLevel(self.args.loglevel)
 
             logger.addHandler(file_log)
 
@@ -179,7 +124,7 @@ class Bauer:
             exit("ERROR: Can't read bot token")
 
     def start(self):
-        if self.args.webhook:
+        if Cfg.get("webhook", "use_webhook"):
             self.tg.bot_start_webhook()
         else:
             self.tg.bot_start_polling()

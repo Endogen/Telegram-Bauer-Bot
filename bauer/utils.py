@@ -26,10 +26,16 @@ def esc_md(text):
     return pattern.sub(lambda m: rep[re.escape(m.group(0))], text)
 
 
-def comp(pattern):
-    """ Returns a pre compiled Regex pattern to ignore case """
-    import re
-    return re.compile(pattern, re.IGNORECASE)
+def build_menu(buttons, n_cols=1, header_buttons=None, footer_buttons=None):
+    """ Build button-menu for Telegram """
+    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+
+    if header_buttons:
+        menu.insert(0, header_buttons)
+    if footer_buttons:
+        menu.append(footer_buttons)
+
+    return menu
 
 
 def is_bool(v):
@@ -45,7 +51,6 @@ def bool2str(b):
     return "Yes" if b else "No"
 
 
-# TODO: Use that in 'rain' plugin
 def split_msg(msg, max_len=None, split_char="\n", only_one=False):
     """ Restrict message length to max characters as defined by Telegram """
     if not max_len:

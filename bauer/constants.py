@@ -2,7 +2,6 @@
 CFG_FILE = "config.json"
 TKN_FILE = "token.json"
 LOG_FILE = "bauer.log"
-DAT_FILE = "bauer.db"
 
 # Project folders
 DER_DIR = "wallets"

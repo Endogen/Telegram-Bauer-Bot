@@ -11,7 +11,7 @@ from bauer.config import ConfigManager as Cfg
 class Restart(BauerPlugin):
 
     def __enter__(self):
-        self._restart_notification()
+        self._restart_check()
         return self
 
     def get_handle(self):
@@ -27,17 +27,18 @@ class Restart(BauerPlugin):
         user_id = update.effective_user.id
         cls_name = type(self).__name__.lower()
 
+        # TODO: Save in 'state' file in plugin dir?
         Cfg.set(user_id, "plugins", cls_name, "user_id")
         Cfg.set(m.message_id, "plugins", cls_name, "message")
 
         m_name = __spec__.name
         m_name = m_name[:m_name.index(".")]
 
-        time.sleep(0.2)
+        time.sleep(1)
         os.execl(sys.executable, sys.executable, '-m', m_name, *sys.argv[1:])
 
-    # Inform about successful restart
-    def _restart_notification(self):
+    def _restart_check(self):
+        """ Inform about successful restart """
         cls_name = type(self).__name__.lower()
         message = Cfg.get("plugins", cls_name, "message")
         user_id = Cfg.get("plugins", cls_name, "user_id")
@@ -46,12 +47,11 @@ class Restart(BauerPlugin):
             return
 
         try:
-            self.tgb.updater.bot.edit_message_text(
+            self.tg_bot.updater.bot.edit_message_text(
                 chat_id=user_id,
                 message_id=message,
                 text=f"{emo.DONE} Restarting bot...")
         except Exception as e:
-            msg = "Not possible to update restart message"
-            logging.error(f"{msg}: {e}")
-
-        Cfg.remove("plugins", cls_name)
+            logging.error(str(e))
+        finally:
+            Cfg.remove("plugins", cls_name)
