@@ -9,7 +9,6 @@ from telegram import ChatAction
 from bauer.config import ConfigManager as Cfg
 
 
-# TODO: Completely rework structure: one folder per plugin. In there all other folders like SQL, RES, ...
 class BauerPluginInterface:
 
     def __enter__(self):
@@ -52,9 +51,9 @@ class BauerPlugin(BauerPluginInterface):
 
         # Preparation for database creation
         cls_name = type(self).__name__.lower()
-        self._db_path = os.path.join(c.DAT_DIR, f"{cls_name}.db")
-        data_dir = os.path.dirname(self._db_path)
-        os.makedirs(data_dir, exist_ok=True)
+        self._db_path = os.path.join(c.PLG_DIR, cls_name, f"{cls_name}.db")
+        directory = os.path.dirname(self._db_path)
+        os.makedirs(directory, exist_ok=True)
 
     def add_plugin(self, module_name):
         self.tg_bot.add_plugin(module_name)
@@ -62,6 +61,7 @@ class BauerPlugin(BauerPluginInterface):
     def remove_plugin(self, module_name):
         self.tg_bot.remove_plugin(module_name)
 
+    # TODO: Rename to 'get_file_content'?
     # TODO: 'from_plugin' is unused
     def get_res(self, filename, from_plugin=True):
         """ Return content from file """
@@ -77,13 +77,12 @@ class BauerPlugin(BauerPluginInterface):
 
     def get_sql(self, filename, from_plugin=True):
         """ Return SQL statement from file """
-        cls_name = type(self).__name__.lower()
         filename = f"{filename}.sql"
 
         if from_plugin:
-            path = os.path.join(c.SQL_DIR, cls_name, filename)
+            path = os.path.join(self.resource_path(), filename)
         else:
-            path = os.path.join(c.SQL_DIR, filename)
+            path = os.path.join(c.RES_DIR, filename)
 
         try:
             with open(path) as f:
@@ -92,7 +91,7 @@ class BauerPlugin(BauerPluginInterface):
             logging.error(e)
             raise e
 
-    def execute_sql(self, sql, *args, db=None):
+    def execute_sql(self, sql, *args, plugin=None):
         """ Execute raw SQL statement on database for given plugin """
         res = {"success": None, "data": None}
 
@@ -109,9 +108,10 @@ class BauerPlugin(BauerPluginInterface):
                 res["success"] = True
                 return res
 
-        if db:
-            db_name = f"{db.lower()}.db"
-            db_path = os.path.join(c.DAT_DIR, db_name)
+        if plugin:
+            plugin = plugin.lower()
+            db_name = f"{plugin}.db"
+            db_path = os.path.join(self.data_path(plugin=plugin), db_name)
         else:
             db_path = self._db_path
 
@@ -131,11 +131,12 @@ class BauerPlugin(BauerPluginInterface):
         con.close()
         return res
 
-    def _table_exists(self, table_name, db=None):
+    def _table_exists(self, table_name, plugin=None):
         """ Return TRUE if table exists, otherwise FALSE """
-        if db:
-            db_name = f"{db.lower()}.db"
-            db_path = os.path.join(c.DAT_DIR, db_name)
+        if plugin:
+            plugin = plugin.lower()
+            db_name = f"{plugin}.db"
+            db_path = os.path.join(self.data_path(plugin=plugin), db_name)
         else:
             db_path = self._db_path
 
@@ -152,6 +153,25 @@ class BauerPlugin(BauerPluginInterface):
 
         con.close()
         return exists
+
+    # TODO: Make private?
+    def plugin_name(self):
+        return type(self).__name__.lower()
+
+    # TODO: Make private?
+    # TODO: Do i need it?
+    def resource_path(self, plugin=plugin_name()):
+        return os.path.join(c.PLG_DIR, plugin, c.PLG_RES_DIR)
+
+    def config_path(self, plugin=plugin_name()):
+        return os.path.join(c.PLG_DIR, plugin, c.PLG_CFG_DIR)
+
+    def data_path(self, plugin=plugin_name()):
+        return os.path.join(c.PLG_DIR, plugin, c.PLG_DAT_DIR)
+
+    def plugin_available(self, plugin_name):
+        # TODO: Implement search in self.tg_bot.plugins and return TRUE / FALSE
+        pass
 
     @staticmethod
     def threaded(fn):
@@ -191,7 +211,7 @@ class BauerPlugin(BauerPluginInterface):
 
 # Categories for commands
 class Category:
-
+    # TODO: Don't hardcode categories
     AUTOGAME = "Autogame"
     BISMUTH = "Bismuth"
     DRAGGINATOR = "Dragginator"

@@ -39,7 +39,7 @@ class Toplist(BauerPlugin):
         # ---- TIP top-list ----
         elif args[0] == "tip":
             sql = self.get_sql("top_tip")
-            res = self.execute_sql(sql, db="tip")
+            res = self.execute_sql(sql, plugin="tip")
 
             if not res["success"]:
                 update.message.reply_text(

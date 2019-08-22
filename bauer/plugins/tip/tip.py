@@ -3,7 +3,7 @@ import bauer.utils as utl
 
 from telegram import ParseMode
 from bauer.plugin import BauerPlugin, Category
-from bauer.bismuth import Bismuth
+from bauer.plugins.wallet.bismuth import Bismuth
 from bauer.config import ConfigManager as Cfg
 
 

@@ -8,6 +8,7 @@ from bauer.plugin import BauerPlugin
 from bauer.config import ConfigManager as Cfg
 
 
+# TODO: Save data in plugin json file
 class Restart(BauerPlugin):
 
     def __enter__(self):

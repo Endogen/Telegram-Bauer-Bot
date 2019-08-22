@@ -25,6 +25,7 @@ class Admin(BauerPlugin):
         args = [s.lower() for s in args]
         command = args[0]
 
+        # TODO: Add possibility to connect to different plugin DBs
         # ---- Execute raw SQL ----
         if command == "sql":
             if Cfg.get("database", "use_db"):

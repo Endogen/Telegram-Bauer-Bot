@@ -9,6 +9,7 @@ from bismuthclient.bismuthclient import BismuthClient
 
 class Bismuth:
 
+    WALLET_DIR = os.path.join("plugins", "wallet", "dat", "wallets")
     TERMS_FILE = "terms.md"
 
     def __init__(self, username):
@@ -43,8 +44,8 @@ class Bismuth:
 
     @staticmethod
     def get_wallet_path(username):
-        os.makedirs(con.DER_DIR, exist_ok=True)
-        return os.path.join(con.DER_DIR, f"{username}.der")
+        os.makedirs(Bismuth.WALLET_DIR, exist_ok=True)
+        return os.path.join(Bismuth.WALLET_DIR, f"{username}.der")
 
     @staticmethod
     def get_address_for(username):

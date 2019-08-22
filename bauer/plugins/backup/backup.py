@@ -11,6 +11,8 @@ from bauer.plugin import BauerPlugin
 
 class Backup(BauerPlugin):
 
+    BCK_DIR = "backups"
+
     def get_handle(self):
         return "backup"
 
@@ -19,14 +21,18 @@ class Backup(BauerPlugin):
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         # List of folders to exclude from backup
-        exclude = [con.LOG_DIR, con.BCK_DIR, "__pycache__"]
+        exclude = [con.LOG_DIR, self.BCK_DIR, "__pycache__"]
 
-        # Create 'backup' folder
-        os.makedirs(os.path.join(os.getcwd(), con.BCK_DIR), exist_ok=True)
+        # TODO: Remove
+        #cls_name = type(self).__name__.lower()
+        #bck_path = os.path.join(con.PLG_DIR, cls_name, )
 
-        filename = os.path.join(con.BCK_DIR, f"{time.strftime('%Y%m%d%H%M%S')}.zip")
+        # Create folder to store backups
+        os.makedirs(self.BCK_DIR, exist_ok=True)
+
+        filename = os.path.join(self.BCK_DIR, f"{time.strftime('%Y%m%d%H%M%S')}.zip")
         with zipfile.ZipFile(filename, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-            bck_base_dir = os.path.abspath(os.path.join(f"'.'{os.sep}", con.BCK_DIR))
+            bck_base_dir = os.path.abspath(os.path.join(f"'.'{os.sep}", self.BCK_DIR))
             base_path = os.path.normpath(bck_base_dir)
 
             base_dir = os.path.abspath('./')

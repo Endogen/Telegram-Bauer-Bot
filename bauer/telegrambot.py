@@ -31,8 +31,7 @@ class TelegramBot:
         try:
             self.updater = Updater(self._token, request_kwargs=kwargs)
         except InvalidToken as e:
-            cls_name = f"Class: {type(self).__name__}"
-            logging.error(f"{repr(e)} - {cls_name}")
+            logging.error(e)
             exit("ERROR: Bot token not valid")
 
         self.job_queue = self.updater.job_queue
@@ -111,14 +110,10 @@ class TelegramBot:
         return {"success": True, "msg": "Plugin removed"}
 
     def _load_plugins(self):
-        """ Load all plugins in the 'plugins' folder """
-        for _, _, files in os.walk(os.path.join(con.SRC_DIR, con.PLG_DIR)):
-            for file in files:
-                if not file.lower().endswith(".py"):
-                    continue
-                if file.startswith("_"):
-                    continue
-                self._load_plugin(file)
+        """ Load all plugins from the 'plugins' folder """
+        for _, folders, _ in os.walk(os.path.join(con.SRC_DIR, con.PLG_DIR)):
+            for folder in folders:
+                self._load_plugin(f"{folder}.py")
 
     def _load_plugin(self, file):
         """ Load a single plugin """

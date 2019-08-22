@@ -9,6 +9,7 @@ from bauer.config import ConfigManager as Cfg
 from logging.handlers import TimedRotatingFileHandler
 
 
+# TODO: Bei Errors option in config dass Fehler an Admin geschickt wird
 class Bauer:
 
     def __init__(self):

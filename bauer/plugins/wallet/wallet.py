@@ -9,7 +9,7 @@ from bismuthclient.bismuthutil import BismuthUtil
 from telegram.ext import CallbackQueryHandler
 from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from bauer.plugin import BauerPlugin, Category
-from bauer.bismuth import Bismuth
+from bauer.plugins.wallet.bismuth import Bismuth
 
 
 class Wallet(BauerPlugin):
