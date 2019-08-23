@@ -74,7 +74,7 @@ class TelegramBot:
                 return {"success": False, "msg": "Plugin already active"}
 
         try:
-            module_path = f"{con.SRC_DIR}.{con.PLG_DIR}.{module_name}"
+            module_path = f"{con.DIR_SRC}.{con.DIR_PLG}.{module_name}"
             module = importlib.import_module(module_path)
 
             reload(module)
@@ -111,15 +111,18 @@ class TelegramBot:
 
     def _load_plugins(self):
         """ Load all plugins from the 'plugins' folder """
-        for _, folders, _ in os.walk(os.path.join(con.SRC_DIR, con.PLG_DIR)):
+        for _, folders, _ in os.walk(os.path.join(con.DIR_SRC, con.DIR_PLG)):
             for folder in folders:
+                if folder.startswith("_"):
+                    continue
                 self._load_plugin(f"{folder}.py")
+            break
 
     def _load_plugin(self, file):
         """ Load a single plugin """
         try:
-            module_name = file[:-3]
-            module_path = f"{con.SRC_DIR}.{con.PLG_DIR}.{module_name}"
+            module_name, extension = os.path.splitext(file)
+            module_path = f"{con.DIR_SRC}.{con.DIR_PLG}.{module_name}.{module_name}"
             module = importlib.import_module(module_path)
 
             with getattr(module, module_name.capitalize())(self) as plugin:
@@ -127,9 +130,8 @@ class TelegramBot:
                 self.plugins.append(plugin)
 
                 logging.info(f"Plugin '{type(plugin).__name__}' added")
-        except Exception as ex:
-            msg = f"File '{file}' can't be loaded as a plugin: {ex}"
-            logging.warning(msg)
+        except Exception as e:
+            logging.warning(e)
 
     def _add_handler(self, plugin):
         """ Add CommandHandler for given plugin """
@@ -146,7 +148,7 @@ class TelegramBot:
         try:
             name = update.message.effective_attachment.file_name
             file = bot.getFile(update.message.document.file_id)
-            file.download(os.path.join(con.SRC_DIR, con.PLG_DIR, name))
+            file.download(os.path.join(con.DIR_SRC, con.DIR_PLG, name))
 
             class_name = name.replace(".py", "")
 

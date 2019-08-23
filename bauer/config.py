@@ -9,7 +9,7 @@ from watchdog.events import FileSystemEventHandler
 
 class ConfigManager:
 
-    _CFG_FILE = con.CFG_FILE
+    _CFG_FILE = con.FILE_CFG
 
     _cfg = dict()
 
@@ -98,7 +98,7 @@ class ChangeHandler(FileSystemEventHandler):
 
     @staticmethod
     def on_modified(event):
-        cfg_path = os.path.join('.', con.CFG_DIR, con.CFG_FILE)
+        cfg_path = os.path.join('.', con.DIR_CFG, con.FILE_CFG)
 
         if event.src_path == cfg_path:
             statbuf = os.stat(event.src_path)

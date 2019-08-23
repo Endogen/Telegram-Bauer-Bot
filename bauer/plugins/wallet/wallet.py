@@ -14,13 +14,16 @@ from bauer.plugins.wallet.bismuth import Bismuth
 
 class Wallet(BauerPlugin):
 
+    TERMS_FILE = "terms.md"
+    WALLETS_DIR = "wallets"
+    QRCODES_DIR = "qr_codes"
     BLCK_EXPL_URL = "https://bismuth.online/search?quicksearch="
 
     def __enter__(self):
         self.tg_bot.dispatcher.add_handler(
             CallbackQueryHandler(self._callback))
 
-        sql = self.get_sql("create_terms")
+        sql = self.get_resource("create_terms.sql")
         self.execute_sql(sql)
 
         return self
@@ -49,10 +52,12 @@ class Wallet(BauerPlugin):
                     parse_mode=ParseMode.MARKDOWN)
                 return
 
-            update.message.reply_text(
-                text=Bismuth.get_terms(),
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=self._terms_keyboard(username))
+            terms_file = os.path.join(self.path_resource(), self.TERMS_FILE)
+            with open(terms_file, "r", encoding="utf8") as file:
+                update.message.reply_text(
+                    text=file.read(),
+                    parse_mode=ParseMode.MARKDOWN,
+                    reply_markup=self._terms_keyboard(username))
 
         # ---- SHOW ADDRESS ----
         elif arg == "address":
@@ -70,13 +75,14 @@ class Wallet(BauerPlugin):
             if not self._wallet_exists(update, username):
                 return
 
-            qr_dir = con.DER_DIR
+            qr_dir = os.path.join(self.path_self(), self.QRCODES_DIR)
             qr_name = f"{username}.png"
-            address = Bismuth.get_address_for(username)
             qr_code = os.path.join(qr_dir, qr_name)
 
+            address = Bismuth.get_address_for(username)
+
             if not os.path.isfile(qr_code):
-                logo = os.path.join(con.RES_DIR, "bismuth.png")
+                logo = os.path.join(con.DIR_RES, "bismuth.png")
 
                 myqr.run(
                     address,
@@ -130,7 +136,7 @@ class Wallet(BauerPlugin):
             bis.load_wallet()
             trx = bis.send(send_to, amount)
 
-            url = f"{self.BLCK_EXPL_URL}{Bismuth.url_encode_trxid(trx)}"
+            url = f"{self.BLCK_EXPL_URL}{utl.url_encode(trx)}"
 
             if trx:
                 self.tg_bot.updater.bot.edit_message_text(
@@ -179,11 +185,7 @@ class Wallet(BauerPlugin):
         return True
 
     def _terms_keyboard(self, username):
-        buttons = [InlineKeyboardButton(
-            "Accept Terms",
-            callback_data=username)]
-
-        menu = utl.build_menu(buttons)
+        menu = utl.build_menu([InlineKeyboardButton("Accept Terms", callback_data=username)])
         return InlineKeyboardMarkup(menu, resize_keyboard=True)
 
     def _callback(self, bot, update):
@@ -216,7 +218,7 @@ class Wallet(BauerPlugin):
 
     def _terms_accepted(self, username):
         """ Add flag that user accepted terms """
-        statement = self.get_sql("insert_terms")
+        statement = self.get_resource("insert_terms.sql")
         self.execute_sql(statement, username, 1)
 
     def get_usage(self):

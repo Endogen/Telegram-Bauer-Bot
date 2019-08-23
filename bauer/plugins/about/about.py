@@ -13,7 +13,7 @@ class About(BauerPlugin):
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         update.message.reply_text(
-            text=self.get_res(self.ABOUT_FILE),
+            text=self.get_resource(self.ABOUT_FILE),
             parse_mode=ParseMode.MARKDOWN,
             disable_web_page_preview=True)
 

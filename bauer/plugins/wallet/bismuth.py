@@ -1,16 +1,14 @@
 import os
 import json
 import logging
-import bauer.constants as con
-import urllib.parse as ul
+import bauer.constants as c
 
 from bismuthclient.bismuthclient import BismuthClient
 
 
 class Bismuth:
 
-    WALLET_DIR = os.path.join("plugins", "wallet", "dat", "wallets")
-    TERMS_FILE = "terms.md"
+    WALLET_DIR = os.path.join(c.DIR_SRC, c.DIR_PLG, "wallet", "wallets")
 
     def __init__(self, username):
         logging.debug(f"Create Bismuth client for user {username}")
@@ -64,15 +62,3 @@ class Bismuth:
     def wallet_exists(username):
         wallet = Bismuth.get_wallet_path(username)
         return os.path.isfile(wallet)
-
-    @staticmethod
-    def url_encode_trxid(trxid):
-        return ul.quote_plus(trxid)
-
-    @staticmethod
-    def get_terms():
-        terms_file = os.path.join(con.RES_DIR, Bismuth.TERMS_FILE)
-        with open(terms_file, "r", encoding="utf8") as file:
-            content = file.readlines()
-
-        return "".join(content)

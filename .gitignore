@@ -107,7 +107,8 @@ venv.bak/
 
 .idea
 /config/token.json
-/data/
 /logs/
-/backup/
-/wallets/
+data/
+wallets/
+backups/
+qr_codes/

@@ -12,5 +12,5 @@ class Start(BauerPlugin):
     @BauerPlugin.threaded
     def get_action(self, bot, update, args):
         update.message.reply_text(
-            text=self.get_res(self.START_FILE),
+            text=self.get_resource(self.START_FILE),
             parse_mode=ParseMode.MARKDOWN)

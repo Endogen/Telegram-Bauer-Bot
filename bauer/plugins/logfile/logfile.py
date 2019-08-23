@@ -16,7 +16,7 @@ class Logfile(BauerPlugin):
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         base_dir = os.path.abspath('./')
-        log_file = os.path.join(base_dir, con.LOG_DIR, con.LOG_FILE)
+        log_file = os.path.join(base_dir, con.DIR_LOG, con.FILE_LOG)
 
         if os.path.isfile(log_file):
             try:

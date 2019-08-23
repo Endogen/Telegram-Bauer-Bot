@@ -71,3 +71,8 @@ def split_msg(msg, max_len=None, split_char="\n", only_one=False):
         messages.append(remaining)
 
     return messages
+
+
+def url_encode(trxid):
+    import urllib.parse as ul
+    return ul.quote_plus(trxid)

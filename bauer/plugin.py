@@ -51,7 +51,7 @@ class BauerPlugin(BauerPluginInterface):
 
         # Preparation for database creation
         cls_name = type(self).__name__.lower()
-        self._db_path = os.path.join(c.PLG_DIR, cls_name, f"{cls_name}.db")
+        self._db_path = os.path.join(self.path_data(), f"{cls_name}.db")
         directory = os.path.dirname(self._db_path)
         os.makedirs(directory, exist_ok=True)
 
@@ -61,35 +61,19 @@ class BauerPlugin(BauerPluginInterface):
     def remove_plugin(self, module_name):
         self.tg_bot.remove_plugin(module_name)
 
-    # TODO: Rename to 'get_file_content'?
-    # TODO: 'from_plugin' is unused
-    def get_res(self, filename, from_plugin=True):
-        """ Return content from file """
-        try:
-            resource_file = os.path.join(c.RES_DIR, filename)
-            with open(resource_file, "r", encoding="utf8") as f:
-                content = f.readlines()
-        except Exception as e:
-            logging.error(e)
-            return None
-
-        return "".join(content)
-
-    def get_sql(self, filename, from_plugin=True):
-        """ Return SQL statement from file """
-        filename = f"{filename}.sql"
-
+    def get_resource(self, filename, from_plugin=True):
+        """ Return content of file """
         if from_plugin:
-            path = os.path.join(self.resource_path(), filename)
+            path = os.path.join(self.path_resource(), filename)
         else:
-            path = os.path.join(c.RES_DIR, filename)
+            path = os.path.join(c.DIR_RES, filename)
 
         try:
-            with open(path) as f:
+            with open(path, "r", encoding="utf8") as f:
                 return f.read()
         except Exception as e:
             logging.error(e)
-            raise e
+            return None
 
     def execute_sql(self, sql, *args, plugin=None):
         """ Execute raw SQL statement on database for given plugin """
@@ -110,8 +94,8 @@ class BauerPlugin(BauerPluginInterface):
 
         if plugin:
             plugin = plugin.lower()
-            db_name = f"{plugin}.db"
-            db_path = os.path.join(self.data_path(plugin=plugin), db_name)
+            data_path = self.path_data(plugin=plugin)
+            db_path = os.path.join(data_path, f"{plugin}.db")
         else:
             db_path = self._db_path
 
@@ -136,7 +120,7 @@ class BauerPlugin(BauerPluginInterface):
         if plugin:
             plugin = plugin.lower()
             db_name = f"{plugin}.db"
-            db_path = os.path.join(self.data_path(plugin=plugin), db_name)
+            db_path = os.path.join(self.path_data(plugin=plugin), db_name)
         else:
             db_path = self._db_path
 
@@ -144,8 +128,9 @@ class BauerPlugin(BauerPluginInterface):
         cur = con.cursor()
         exists = False
 
+        statement = self.get_resource("table_exists.sql", from_plugin=False)
+
         try:
-            statement = self.get_sql("table_exists", from_plugin=False)
             if cur.execute(statement, [table_name]).fetchone():
                 exists = True
         except Exception as e:
@@ -154,24 +139,38 @@ class BauerPlugin(BauerPluginInterface):
         con.close()
         return exists
 
-    # TODO: Make private?
     def plugin_name(self):
         return type(self).__name__.lower()
 
-    # TODO: Make private?
-    # TODO: Do i need it?
-    def resource_path(self, plugin=plugin_name()):
-        return os.path.join(c.PLG_DIR, plugin, c.PLG_RES_DIR)
+    def path_resource(self, plugin=None):
+        if not plugin:
+            plugin = self.plugin_name()
+        return os.path.join(c.DIR_SRC, c.DIR_PLG, plugin, c.DIR_RES)
 
-    def config_path(self, plugin=plugin_name()):
-        return os.path.join(c.PLG_DIR, plugin, c.PLG_CFG_DIR)
+    def path_config(self, plugin=None):
+        if not plugin:
+            plugin = self.plugin_name()
+        return os.path.join(c.DIR_SRC, c.DIR_PLG, plugin, c.DIR_CFG)
 
-    def data_path(self, plugin=plugin_name()):
-        return os.path.join(c.PLG_DIR, plugin, c.PLG_DAT_DIR)
+    def path_data(self, plugin=None):
+        if not plugin:
+            plugin = self.plugin_name()
+        return os.path.join(c.DIR_SRC, c.DIR_PLG, plugin, c.DIR_DAT)
+
+    def path_self(self, plugin=None):
+        if not plugin:
+            plugin = self.plugin_name()
+        return os.path.join(c.DIR_SRC, c.DIR_PLG, plugin)
 
     def plugin_available(self, plugin_name):
-        # TODO: Implement search in self.tg_bot.plugins and return TRUE / FALSE
-        pass
+        plugin_found = False
+
+        for plugin in self.tg_bot.plugins:
+            plg_name = type(self).__name__.lower()
+            if plg_name == plugin_name.lower():
+                plugin_found = True
+
+        return plugin_found
 
     @staticmethod
     def threaded(fn):

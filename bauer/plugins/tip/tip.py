@@ -12,7 +12,7 @@ class Tip(BauerPlugin):
     DEFAULT_TIP = 1
 
     def __enter__(self):
-        sql = self.get_sql("create_tip")
+        sql = self.get_resource("create_tip.sql")
         self.execute_sql(sql)
         return self
 
@@ -89,7 +89,7 @@ class Tip(BauerPlugin):
         if bis.tip(to_user, amount):
             if Cfg.get("database", "use_db"):
                 # Save tipping in database
-                statement = self.get_sql("insert_tip")
+                statement = self.get_resource("insert_tip.sql")
                 self.execute_sql(statement, from_user, to_user, amount)
 
             # Send success message

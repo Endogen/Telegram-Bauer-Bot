@@ -17,7 +17,7 @@ class Bauer:
         self.args = self._parse_args()
 
         # Load config file
-        Cfg(os.path.join(con.CFG_DIR, con.CFG_FILE))
+        Cfg(os.path.join(con.DIR_CFG, con.FILE_CFG))
 
         # Set up logging
         self._init_logger()
@@ -72,7 +72,7 @@ class Bauer:
         logger = logging.getLogger()
         logger.setLevel(self.args.loglevel)
 
-        log_file = os.path.join(con.LOG_DIR, con.LOG_FILE)
+        log_file = os.path.join(con.DIR_LOG, con.FILE_LOG)
         log_format = "[%(asctime)s %(levelname)s %(filename)s:%(lineno)s %(funcName)s()] %(message)s"
 
         # Log to console
@@ -111,14 +111,14 @@ class Bauer:
         if self.args.token:
             return self.args.token
 
-        token_path = os.path.join(con.CFG_DIR, con.TKN_FILE)
+        token_path = os.path.join(con.DIR_CFG, con.FILE_TKN)
 
         try:
             if os.path.isfile(token_path):
                 with open(token_path, 'r') as file:
                     return json.load(file)["telegram"]
             else:
-                exit(f"ERROR: No token file '{con.TKN_FILE}' found at '{token_path}'")
+                exit(f"ERROR: No token file '{con.FILE_TKN}' found at '{token_path}'")
         except KeyError as e:
             cls_name = f"Class: {type(self).__name__}"
             logging.error(f"{repr(e)} - {cls_name}")

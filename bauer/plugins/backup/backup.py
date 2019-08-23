@@ -21,7 +21,7 @@ class Backup(BauerPlugin):
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         # List of folders to exclude from backup
-        exclude = [con.LOG_DIR, self.BCK_DIR, "__pycache__"]
+        exclude = [con.DIR_LOG, self.BCK_DIR, "__pycache__"]
 
         # TODO: Remove
         #cls_name = type(self).__name__.lower()

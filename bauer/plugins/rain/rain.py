@@ -6,7 +6,7 @@ from telegram import ParseMode
 class Rain(BauerPlugin):
 
     def __enter__(self):
-        statement = self.get_sql("create_rain")
+        statement = self.get_resource("create_rain.sql")
         self.execute_sql(statement)
         return self
 
