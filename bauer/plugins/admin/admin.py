@@ -25,14 +25,16 @@ class Admin(BauerPlugin):
         args = [s.lower() for s in args]
         command = args[0]
 
-        # TODO: Add possibility to connect to different plugin DBs
         # ---- Execute raw SQL ----
         if command == "sql":
             if Cfg.get("database", "use_db"):
                 args.pop(0)
 
+                plugin = args[0].lower()
+                args.pop(0)
+
                 sql = " ".join(args)
-                res = self.execute_sql(sql)
+                res = self.execute_sql(sql, plugin=plugin)
 
                 if res["success"]:
                     if res["data"]:
@@ -109,6 +111,6 @@ class Admin(BauerPlugin):
                 parse_mode=ParseMode.MARKDOWN)
 
     def get_usage(self):
-        return f"`/{self.get_handle()} sql <statement>`\n" \
+        return f"`/{self.get_handle()} sql <plugin> <statement>`\n" \
                f"`/{self.get_handle()} cfg <key> (<sub-key>) <value>`\n" \
                f"`/{self.get_handle()} plg add|remove <plugin name>`"

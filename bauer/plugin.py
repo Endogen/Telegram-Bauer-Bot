@@ -52,8 +52,6 @@ class BauerPlugin(BauerPluginInterface):
         # Preparation for database creation
         cls_name = type(self).__name__.lower()
         self._db_path = os.path.join(self.path_data(), f"{cls_name}.db")
-        directory = os.path.dirname(self._db_path)
-        os.makedirs(directory, exist_ok=True)
 
     def add_plugin(self, module_name):
         self.tg_bot.add_plugin(module_name)
@@ -99,12 +97,18 @@ class BauerPlugin(BauerPluginInterface):
         else:
             db_path = self._db_path
 
-        con = sqlite3.connect(db_path)
-        cur = con.cursor()
+        # Create directory if it doesn't exist
+        directory = os.path.dirname(self._db_path)
+        os.makedirs(directory, exist_ok=True)
+
+        con = None
 
         try:
+            con = sqlite3.connect(db_path)
+            cur = con.cursor()
             cur.execute(sql, args)
             con.commit()
+
             res["data"] = cur.fetchall()
             res["success"] = True
         except Exception as e:
@@ -112,7 +116,9 @@ class BauerPlugin(BauerPluginInterface):
             res["data"] = str(e)
             res["success"] = False
 
-        con.close()
+        if con:
+            con.close()
+
         return res
 
     def _table_exists(self, table_name, plugin=None):

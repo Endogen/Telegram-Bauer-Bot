@@ -23,16 +23,15 @@ class Backup(BauerPlugin):
         # List of folders to exclude from backup
         exclude = [con.DIR_LOG, self.BCK_DIR, "__pycache__"]
 
-        # TODO: Remove
-        #cls_name = type(self).__name__.lower()
-        #bck_path = os.path.join(con.PLG_DIR, cls_name, )
+        plugin = self.plugin_name()
+        bck_path = os.path.join(con.DIR_SRC, con.DIR_PLG, plugin, self.BCK_DIR)
 
         # Create folder to store backups
-        os.makedirs(self.BCK_DIR, exist_ok=True)
+        os.makedirs(bck_path, exist_ok=True)
 
-        filename = os.path.join(self.BCK_DIR, f"{time.strftime('%Y%m%d%H%M%S')}.zip")
+        filename = os.path.join(bck_path, f"{time.strftime('%Y%m%d%H%M%S')}.zip")
         with zipfile.ZipFile(filename, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-            bck_base_dir = os.path.abspath(os.path.join(f"'.'{os.sep}", self.BCK_DIR))
+            bck_base_dir = os.path.abspath(os.path.join(f"'.'{os.sep}", bck_path))
             base_path = os.path.normpath(bck_base_dir)
 
             base_dir = os.path.abspath('./')
