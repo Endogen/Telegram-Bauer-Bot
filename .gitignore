@@ -107,7 +107,7 @@ venv.bak/
 
 .idea
 /config/token.json
-/logs/
+logs/
 data/
 wallets/
 backups/
