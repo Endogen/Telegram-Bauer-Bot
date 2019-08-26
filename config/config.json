@@ -1,7 +1,10 @@
 {
-    "admin_id": [
-        134166731
-    ],
+    "admin": {
+        "ids":  [
+            13416673
+        ],
+        "notify_on_error": true
+    },
     "telegram": {
         "read_timeout": 30,
         "connect_timeout": 30
