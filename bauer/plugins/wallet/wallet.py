@@ -121,7 +121,7 @@ class Wallet(BauerPlugin):
                     parse_mode=ParseMode.MARKDOWN)
                 return
 
-            if not utl.is_number(amount) or float(amount) < 0:
+            if not utl.is_numeric(amount) or float(amount) < 0:
                 update.message.reply_text(
                     text=f"{emo.ERROR} Specified amount is not valid",
                     parse_mode=ParseMode.MARKDOWN)
@@ -162,10 +162,15 @@ class Wallet(BauerPlugin):
             bis = Bismuth(username)
             bis.load_wallet()
 
+            balance = bis.get_balance()
+
+            if utl.is_numeric(balance):
+                balance = f"`{balance}` BIS"
+
             self.tg_bot.updater.bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=f"Balance: `{bis.get_balance()}` BIS",
+                text=f"Balance: {balance}",
                 parse_mode=ParseMode.MARKDOWN)
 
         # ---- Everything else ----
