@@ -14,7 +14,6 @@ from telegram.error import InvalidToken
 class TelegramBot:
 
     plugins = list()
-    bismuth = None
 
     def __init__(self, bot_token):
         self._token = bot_token
@@ -142,7 +141,7 @@ class TelegramBot:
                 pass_args=True))
 
     def _download(self, bot, update):
-        if update.effective_user.id not in Cfg.get("admin_id"):
+        if update.effective_user.id not in Cfg.get("admin", "ids"):
             return
 
         try:

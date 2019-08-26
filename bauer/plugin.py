@@ -206,7 +206,7 @@ class BauerPlugin(BauerPluginInterface):
     @classmethod
     def only_owner(cls, func):
         def _only_owner(self, bot, update, **kwargs):
-            if update.effective_user.id in Cfg.get("admin_id"):
+            if update.effective_user.id in Cfg.get("admin", "ids"):
                 return func(self, bot, update, **kwargs)
         return _only_owner
 
