@@ -4,12 +4,12 @@ import logging
 import bauer.constants as con
 
 from argparse import ArgumentParser
-from bauer.telegrambot import TelegramBot
+from bauer.tgbot import TelegramBot
 from bauer.config import ConfigManager as Cfg
 from logging.handlers import TimedRotatingFileHandler
 
 
-# TODO: Bei Errors option in config dass Fehler an Admin geschickt wird
+# TODO: Add option to send exceptions to admin ids
 class Bauer:
 
     def __init__(self):
@@ -115,7 +115,7 @@ class Bauer:
 
         try:
             if os.path.isfile(token_path):
-                with open(token_path, 'r') as file:
+                with open(token_path, "r", encoding="utf8") as file:
                     return json.load(file)["telegram"]
             else:
                 exit(f"ERROR: No token file '{con.FILE_TKN}' found at '{token_path}'")
