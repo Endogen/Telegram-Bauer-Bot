@@ -22,10 +22,9 @@ class Wallet(BauerPlugin):
     def __enter__(self):
         self.tg_bot.dispatcher.add_handler(
             CallbackQueryHandler(self._callback))
-
-        sql = self.get_resource("create_terms.sql")
-        self.execute_sql(sql)
-
+        if not self.table_exists("terms"):
+            sql = self.get_resource("create_terms.sql")
+            self.execute_sql(sql)
         return self
 
     def get_handle(self):
@@ -52,7 +51,7 @@ class Wallet(BauerPlugin):
                     parse_mode=ParseMode.MARKDOWN)
                 return
 
-            terms_file = os.path.join(self.path_resource(), self.TERMS_FILE)
+            terms_file = os.path.join(self.resource_path(), self.TERMS_FILE)
             with open(terms_file, "r", encoding="utf8") as file:
                 update.message.reply_text(
                     text=file.read(),
@@ -75,7 +74,7 @@ class Wallet(BauerPlugin):
             if not self._wallet_exists(update, username):
                 return
 
-            qr_dir = os.path.join(self.path_self(), self.QRCODES_DIR)
+            qr_dir = os.path.join(self.plugin_path(), self.QRCODES_DIR)
             qr_name = f"{username}.png"
             qr_code = os.path.join(qr_dir, qr_name)
 

@@ -131,7 +131,7 @@ class TelegramBot:
 
                 logging.info(f"Plugin '{type(plugin).__name__}' added")
         except Exception as e:
-            logging.warning(e)
+            logging.warning(f"File '{file}': {e}")
 
     def _add_handler(self, plugin):
         """ Add CommandHandler for given plugin """

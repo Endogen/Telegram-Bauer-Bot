@@ -51,7 +51,7 @@ class BauerPlugin(BauerPluginInterface):
 
         # Preparation for database creation
         cls_name = type(self).__name__.lower()
-        self._db_path = os.path.join(self.path_data(), f"{cls_name}.db")
+        self._db_path = os.path.join(self.data_path(), f"{cls_name}.db")
 
     def add_plugin(self, module_name):
         self.tg_bot.add_plugin(module_name)
@@ -62,7 +62,7 @@ class BauerPlugin(BauerPluginInterface):
     def get_resource(self, filename, from_plugin=True):
         """ Return content of file """
         if from_plugin:
-            path = os.path.join(self.path_resource(), filename)
+            path = os.path.join(self.resource_path(), filename)
         else:
             path = os.path.join(c.DIR_RES, filename)
 
@@ -83,16 +83,9 @@ class BauerPlugin(BauerPluginInterface):
             res["success"] = False
             return res
 
-        # Check if table already exists
-        if sql.lower().startswith("create table"):
-            if self._table_exists(sql.split()[2]):
-                res["data"] = "Table already present"
-                res["success"] = True
-                return res
-
         if plugin:
             plugin = plugin.lower()
-            data_path = self.path_data(plugin=plugin)
+            data_path = self.data_path(plugin=plugin)
             db_path = os.path.join(data_path, f"{plugin}.db")
         else:
             db_path = self._db_path
@@ -121,12 +114,12 @@ class BauerPlugin(BauerPluginInterface):
 
         return res
 
-    def _table_exists(self, table_name, plugin=None):
+    def table_exists(self, table_name, plugin=None):
         """ Return TRUE if table exists, otherwise FALSE """
         if plugin:
             plugin = plugin.lower()
             db_name = f"{plugin}.db"
-            db_path = os.path.join(self.path_data(plugin=plugin), db_name)
+            db_path = os.path.join(self.data_path(plugin=plugin), db_name)
         else:
             db_path = self._db_path
 
@@ -148,22 +141,22 @@ class BauerPlugin(BauerPluginInterface):
     def plugin_name(self):
         return type(self).__name__.lower()
 
-    def path_resource(self, plugin=None):
+    def resource_path(self, plugin=None):
         if not plugin:
             plugin = self.plugin_name()
         return os.path.join(c.DIR_SRC, c.DIR_PLG, plugin, c.DIR_RES)
 
-    def path_config(self, plugin=None):
+    def config_path(self, plugin=None):
         if not plugin:
             plugin = self.plugin_name()
         return os.path.join(c.DIR_SRC, c.DIR_PLG, plugin, c.DIR_CFG)
 
-    def path_data(self, plugin=None):
+    def data_path(self, plugin=None):
         if not plugin:
             plugin = self.plugin_name()
         return os.path.join(c.DIR_SRC, c.DIR_PLG, plugin, c.DIR_DAT)
 
-    def path_self(self, plugin=None):
+    def plugin_path(self, plugin=None):
         if not plugin:
             plugin = self.plugin_name()
         return os.path.join(c.DIR_SRC, c.DIR_PLG, plugin)

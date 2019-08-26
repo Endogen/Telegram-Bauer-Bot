@@ -12,8 +12,9 @@ class Tip(BauerPlugin):
     DEFAULT_TIP = 1
 
     def __enter__(self):
-        sql = self.get_resource("create_tip.sql")
-        self.execute_sql(sql)
+        if not self.table_exists("tip"):
+            sql = self.get_resource("create_tip.sql")
+            self.execute_sql(sql)
         return self
 
     def get_handle(self):
