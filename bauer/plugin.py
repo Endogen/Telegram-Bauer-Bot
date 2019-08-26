@@ -5,6 +5,7 @@ import logging
 import threading
 import bauer.constants as c
 
+from pathlib import Path
 from telegram import ChatAction
 from bauer.config import ConfigManager as Cfg
 
@@ -122,6 +123,9 @@ class BauerPlugin(BauerPluginInterface):
             db_path = os.path.join(self.data_path(plugin=plugin), db_name)
         else:
             db_path = self._db_path
+
+        if not Path(db_path).is_file():
+            return False
 
         con = sqlite3.connect(db_path)
         cur = con.cursor()
