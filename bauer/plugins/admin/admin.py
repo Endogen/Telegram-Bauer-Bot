@@ -27,7 +27,7 @@ class Admin(BauerPlugin):
 
         # ---- Execute raw SQL ----
         if command == "sql":
-            if Cfg.get("database", "use_db"):
+            if self.cfg_get("database", "use_db"):
                 args.pop(0)
 
                 plugin = args[0].lower()

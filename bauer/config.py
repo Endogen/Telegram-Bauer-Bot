@@ -7,86 +7,78 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 
+# TODO: Why are changes not recognized?
 class ConfigManager:
 
-    _CFG_FILE = con.FILE_CFG
-
+    _cfg_file = con.FILE_CFG
     _cfg = dict()
 
     ignore = False
 
-    def __init__(self, config_file=None):
-        if config_file:
-            ConfigManager._CFG_FILE = config_file
+    def __init__(self, config_file):
+        self._cfg_file = config_file
+        #self._watch_changes()
 
-        ConfigManager._watch_changes()
-
-    # Watch for config file changes
-    @staticmethod
-    def _watch_changes():
+    """
+    def _watch_changes(self):
+        # Watch for config file changes in realtime
         observer = Observer()
-
-        file = ConfigManager._CFG_FILE
-        method = ConfigManager._read_cfg
-        change_handler = ChangeHandler(file, method)
-
+        change_handler = ChangeHandler(self._cfg_file, self._read_cfg)
         observer.schedule(change_handler, ".", recursive=True)
         observer.start()
+    """
 
-    @staticmethod
-    def _read_cfg():
-        if os.path.isfile(ConfigManager._CFG_FILE):
-            with open(ConfigManager._CFG_FILE) as config_file:
-                ConfigManager._cfg = json.load(config_file)
-        else:
-            cfg_file = ConfigManager._CFG_FILE
-            exit(f"ERROR: No configuration file '{cfg_file}' found")
+    def _read_cfg(self):
+        if os.path.isfile(self._cfg_file):
+            with open(self._cfg_file) as config_file:
+                self._cfg = json.load(config_file)
 
-    @staticmethod
-    def _write_cfg():
-        if os.path.isfile(ConfigManager._CFG_FILE):
-            with open(ConfigManager._CFG_FILE, "w") as config_file:
-                json.dump(ConfigManager._cfg, config_file, indent=4)
-        else:
-            cfg_file = ConfigManager._CFG_FILE
-            exit(f"ERROR: No configuration file '{cfg_file}' found")
+    def _write_cfg(self):
+        if not os.path.exists(os.path.dirname(self._cfg_file)):
+            os.makedirs(os.path.dirname(self._cfg_file))
 
-    @staticmethod
-    def get(*keys):
-        if not ConfigManager._cfg:
-            ConfigManager._read_cfg()
+        with open(self._cfg_file, "w") as config_file:
+            json.dump(self._cfg, config_file, indent=4)
 
-        value = ConfigManager._cfg
+    def get(self, *keys):
+        if not self._cfg:
+            self._read_cfg()
+
+        value = self._cfg
         for key in keys:
             try:
                 value = value[key]
             except KeyError as e:
-                err = f"Couldn't read '{key}' from Config"
+                err = f"Couldn't read '{key}' from {self._cfg_file}"
                 logging.debug(f"{repr(e)} - {err}")
                 return None
 
         return value if value is not None else None
 
-    @staticmethod
-    def set(value, *keys):
-        tmp_cfg = ConfigManager._cfg
+    def set(self, value, *keys):
+        tmp_cfg = self._cfg
 
         for key in keys[:-1]:
             tmp_cfg = tmp_cfg.setdefault(key, {})
 
         tmp_cfg[keys[-1]] = value
 
-        ConfigManager.ignore = True
-        ConfigManager._write_cfg()
+        self.ignore = True
+        self._write_cfg()
 
-    @staticmethod
-    def remove(*keys):
+    def remove(self, *keys, delete_empty=True):
         for key in keys:
-            if key in ConfigManager._cfg:
-                del ConfigManager._cfg[key]
-                ConfigManager._write_cfg()
+            if key in self._cfg:
+                del self._cfg[key]
+                self._write_cfg()
 
+        # TODO: Test it
+        # Remove config file and folder if empty
+        if delete_empty and len(self._cfg.keys) < 1:
+            os.remove(self._cfg_file)
+            os.rmdir(os.path.dirname(self._cfg_file))
 
+"""
 class ChangeHandler(FileSystemEventHandler):
     file = None
     method = None
@@ -113,3 +105,4 @@ class ChangeHandler(FileSystemEventHandler):
                     ChangeHandler.method()
 
             ChangeHandler.old = new
+"""

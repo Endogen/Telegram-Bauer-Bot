@@ -5,7 +5,7 @@ import bauer.emoji as emo
 import bauer.constants as con
 
 from importlib import reload
-from bauer.config import ConfigManager as Cfg
+from bauer.config import ConfigManager
 from telegram import ParseMode
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 from telegram.error import InvalidToken
@@ -15,20 +15,20 @@ class TelegramBot:
 
     plugins = list()
 
-    def __init__(self, bot_token):
-        self._token = bot_token
+    def __init__(self, config: ConfigManager, token):
+        self.config = config
 
-        _read_timeout = Cfg.get("telegram", "read_timeout")
-        _connect_timeout = Cfg.get("telegram", "connect_timeout")
+        read_timeout = self.config.get("telegram", "read_timeout")
+        connect_timeout = self.config.get("telegram", "connect_timeout")
 
         kwargs = dict()
-        if _read_timeout:
-            kwargs["read_timeout"] = _read_timeout
-        if _connect_timeout:
-            kwargs["connect_timeout"] = _connect_timeout
+        if read_timeout:
+            kwargs["read_timeout"] = read_timeout
+        if connect_timeout:
+            kwargs["connect_timeout"] = connect_timeout
 
         try:
-            self.updater = Updater(self._token, request_kwargs=kwargs)
+            self.updater = Updater(token, request_kwargs=kwargs)
         except InvalidToken as e:
             logging.error(e)
             exit("ERROR: Bot token not valid")
@@ -53,14 +53,14 @@ class TelegramBot:
     def bot_start_webhook(self):
         """ Start the bot in webhook mode """
         self.updater.start_webhook(
-            listen=Cfg.get("webhook", "listen"),
-            port=Cfg.get("webhook", "port"),
-            url_path=self._token,
-            key=Cfg.get("webhook", "privkey_path"),
-            cert=Cfg.get("webhook", "cert_path"),
-            webhook_url=f"{Cfg.get('webhook', 'url')}:"
-                        f"{Cfg.get('webhook', 'port')}/"
-                        f"{self._token}")
+            listen=self.config.get("webhook", "listen"),
+            port=self.config.get("webhook", "port"),
+            url_path=self.updater.bot.token,
+            key=self.config.get("webhook", "privkey_path"),
+            cert=self.config.get("webhook", "cert_path"),
+            webhook_url=f"{self.config.get('webhook', 'url')}:"
+                        f"{self.config.get('webhook', 'port')}/"
+                        f"{self.updater.bot.token}")
 
     # Go in idle mode
     def bot_idle(self):
@@ -141,7 +141,7 @@ class TelegramBot:
                 pass_args=True))
 
     def _download(self, bot, update):
-        if update.effective_user.id not in Cfg.get("admin", "ids"):
+        if update.effective_user.id not in self.config.get("admin", "ids"):
             return
 
         try:

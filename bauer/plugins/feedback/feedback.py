@@ -1,7 +1,6 @@
 import bauer.emoji as emo
 
 from telegram import ParseMode
-from bauer.config import ConfigManager as Cfg
 from bauer.plugin import BauerPlugin, Category
 
 
@@ -28,7 +27,7 @@ class Feedback(BauerPlugin):
 
         feedback = update.message.text.replace(f"/{self.get_handle()} ", "")
 
-        for admin in Cfg.get("admin_id"):
+        for admin in self.cfg_get("admin", "ids", plugin=False):
             bot.send_message(admin, f"Feedback from {name}: {feedback}")
 
         update.message.reply_text(f"Thanks for letting us know {emo.TOP}")

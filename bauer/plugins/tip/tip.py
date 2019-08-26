@@ -4,7 +4,6 @@ import bauer.utils as utl
 from telegram import ParseMode
 from bauer.plugin import BauerPlugin, Category
 from bauer.plugins.wallet.bismuth import Bismuth
-from bauer.config import ConfigManager as Cfg
 
 
 class Tip(BauerPlugin):
@@ -88,7 +87,7 @@ class Tip(BauerPlugin):
 
         # Process actual tipping
         if bis.tip(to_user, amount):
-            if Cfg.get("database", "use_db"):
+            if self.cfg_get("database", "use_db"):
                 # Save tipping in database
                 statement = self.get_resource("insert_tip.sql")
                 self.execute_sql(statement, from_user, to_user, amount)

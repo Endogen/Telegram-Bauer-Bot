@@ -11,7 +11,7 @@ class Help(BauerPlugin):
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         cat_dict = dict()
-        for p in self.tg_bot.plugins:
+        for p in self.plugins():
             if p.get_category() and p.get_description():
                 des = f"/{p.get_handle()} - {p.get_description()}\n"
 

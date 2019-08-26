@@ -2,7 +2,6 @@ import bauer.emoji as emo
 
 from bauer.plugin import BauerPlugin, Category
 from telegram import ParseMode
-from bauer.config import ConfigManager as Cfg
 
 
 class Toplist(BauerPlugin):
@@ -13,7 +12,7 @@ class Toplist(BauerPlugin):
     @BauerPlugin.threaded
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
-        if not Cfg.get("database", "use_db"):
+        if not self.cfg_get("database", "use_db"):
             update.message.reply_text(
                 text=f"{emo.INFO} *Database not enabled*\n"
                      f"Not possible to use `/{self.get_handle()} command`",

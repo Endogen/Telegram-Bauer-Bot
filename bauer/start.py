@@ -16,14 +16,12 @@ class Bauer:
         # Parse command line arguments
         self.args = self._parse_args()
 
-        # Load config file
-        Cfg(os.path.join(con.DIR_CFG, con.FILE_CFG))
-
         # Set up logging
         self._init_logger()
 
-        # Create Telegram bot
-        self.tg = TelegramBot(self._get_bot_token())
+        # Read config file and create Telegram bot
+        self.cfg = Cfg(os.path.join(con.DIR_CFG, con.FILE_CFG))
+        self.tgb = TelegramBot(self.cfg, self._get_bot_token())
 
     # Parse arguments
     def _parse_args(self):
@@ -125,9 +123,9 @@ class Bauer:
             exit("ERROR: Can't read bot token")
 
     def start(self):
-        if Cfg.get("webhook", "use_webhook"):
-            self.tg.bot_start_webhook()
+        if self.cfg.get("webhook", "use_webhook"):
+            self.tgb.bot_start_webhook()
         else:
-            self.tg.bot_start_polling()
+            self.tgb.bot_start_polling()
 
-        self.tg.bot_idle()
+        self.tgb.bot_idle()

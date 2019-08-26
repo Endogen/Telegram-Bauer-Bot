@@ -5,33 +5,28 @@ import logging
 import bauer.emoji as emo
 
 from bauer.plugin import BauerPlugin
-from bauer.config import ConfigManager as Cfg
 
 
 class Restart(BauerPlugin):
 
     def __enter__(self):
-        # Read message and user_id from config file
-        cfg_path = os.path.join(self.config_path(), f"{self.plugin_name()}.db")
+        message = self.cfg_get("message")
+        user_id = self.cfg_get("user_id")
 
-        cfg = Cfg(cfg_path)
-        message = cfg.get("message")
-        user_id = cfg.get("user_id")
-
-        # If no data saved, don't so anything
+        # If no data saved, don't do anything
         if not message or not user_id:
             return self
 
         try:
-            self.tg_bot.updater.bot.edit_message_text(
+            self._tgb.updater.bot.edit_message_text(
                 chat_id=user_id,
                 message_id=message,
                 text=f"{emo.DONE} Restarting bot...")
         except Exception as e:
             logging.error(str(e))
         finally:
-            cfg.remove("message")
-            cfg.remove("user_id")
+            self.cfg_del("message")
+            self.cfg_del("user_id")
 
         return self
 
@@ -47,15 +42,11 @@ class Restart(BauerPlugin):
 
         user_id = update.effective_user.id
 
-        # TODO: How to have that as a class variable?
-        cfg_path = os.path.join(self.config_path(), f"{self.plugin_name()}.db")
-
         # TODO: Folder will not be created automatically
-        cfg = Cfg(cfg_path)
-        cfg.set(user_id, "user_id")
-        cfg.set(m.message_id, "message")
+        self.cfg_set(user_id, "user_id", plugin=False)
+        self.cfg_set(m.message_id, "message", plugin=False)
 
-        m_name = __spec__.name
+        m_name = sys.__spec__.name  # TODO: Or return to '__spec__.name'?
         m_name = m_name[:m_name.index(".")]
 
         time.sleep(1)

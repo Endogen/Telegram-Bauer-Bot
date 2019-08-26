@@ -20,7 +20,7 @@ class Wallet(BauerPlugin):
     BLCK_EXPL_URL = "https://bismuth.online/search?quicksearch="
 
     def __enter__(self):
-        self.tg_bot.dispatcher.add_handler(
+        self._tgb.dispatcher.add_handler(
             CallbackQueryHandler(self._callback))
         if not self.table_exists("terms"):
             sql = self.get_resource("create_terms.sql")
@@ -138,14 +138,14 @@ class Wallet(BauerPlugin):
             url = f"{self.BLCK_EXPL_URL}{utl.url_encode(trx)}"
 
             if trx:
-                self.tg_bot.updater.bot.edit_message_text(
+                self._tgb.updater.bot.edit_message_text(
                     chat_id=message.chat_id,
                     message_id=message.message_id,
                     text=f"{emo.DONE} Done! [View on Block Explorer]({url})\n"
                          f"(Available after ~1 minute)",
                     parse_mode=ParseMode.MARKDOWN)
             else:
-                self.tg_bot.updater.bot.edit_message_text(
+                self._tgb.updater.bot.edit_message_text(
                     chat_id=message.chat_id,
                     message_id=message.message_id,
                     text=f"{emo.ERROR} Not able to send Transaction")
@@ -167,7 +167,7 @@ class Wallet(BauerPlugin):
             if utl.is_numeric(balance):
                 balance = f"`{balance}` BIS"
 
-            self.tg_bot.updater.bot.edit_message_text(
+            self._tgb.updater.bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=f"Balance: {balance}",

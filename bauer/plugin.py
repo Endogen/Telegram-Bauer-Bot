@@ -7,7 +7,7 @@ import bauer.constants as c
 
 from pathlib import Path
 from telegram import ChatAction
-from bauer.config import ConfigManager as Cfg
+from bauer.config import ConfigManager
 
 
 class BauerPluginInterface:
@@ -48,17 +48,39 @@ class BauerPlugin(BauerPluginInterface):
 
     def __init__(self, tg_bot):
         super().__init__()
-        self.tg_bot = tg_bot
+        self._tgb = tg_bot
 
-        # Preparation for database creation
-        cls_name = type(self).__name__.lower()
-        self._db_path = os.path.join(self.data_path(), f"{cls_name}.db")
+        # Save path to database file
+        self._db_path = os.path.join(self.data_path(), f"{self.plugin_name()}.db")
+        # Save path to config file
+        self._cfg_path = os.path.join(self.config_path(), f"{self.plugin_name()}.json")
+
+    def plugins(self):
+        return self._tgb.plugins
+
+    def cfg_get(self, *keys, plugin=True):
+        if plugin:
+            cfg = ConfigManager(self._cfg_path)
+            return cfg.get(keys)
+        return self._tgb.config.get(keys)
+
+    # TODO: Check if value set in plugin1 is also present in plugin2
+    def cfg_set(self, value, *keys, plugin=True):
+        if plugin:
+            cfg = ConfigManager(self._cfg_path)
+            cfg.set(value, keys)
+        else:
+            self._tgb.config.set(value, keys)
+
+    def cfg_del(self, *keys, delete_empty=True):
+        cfg = ConfigManager(self._cfg_path)
+        cfg.remove(keys, delete_empty)
 
     def add_plugin(self, module_name):
-        self.tg_bot.add_plugin(module_name)
+        self._tgb.add_plugin(module_name)
 
     def remove_plugin(self, module_name):
-        self.tg_bot.remove_plugin(module_name)
+        self._tgb.remove_plugin(module_name)
 
     def get_resource(self, filename, from_plugin=True):
         """ Return content of file """
@@ -79,7 +101,7 @@ class BauerPlugin(BauerPluginInterface):
         res = {"success": None, "data": None}
 
         # Check if database usage is enabled
-        if not Cfg.get("database", "use_db"):
+        if not self.cfg_get("database", "use_db"):
             res["data"] = "Database disabled"
             res["success"] = False
             return res
@@ -165,10 +187,11 @@ class BauerPlugin(BauerPluginInterface):
             plugin = self.plugin_name()
         return os.path.join(c.DIR_SRC, c.DIR_PLG, plugin)
 
+    # TODO: Test this
     def plugin_available(self, plugin_name):
         plugin_found = False
 
-        for plugin in self.tg_bot.plugins:
+        for plugin in self._tgb.plugins:
             plg_name = type(self).__name__.lower()
             if plg_name == plugin_name.lower():
                 plugin_found = True
