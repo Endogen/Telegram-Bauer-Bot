@@ -1,4 +1,4 @@
-def is_number(string):
+def is_numeric(string):
     """ Also accepts '.' in the string. Function 'isnumeric()' doesn't """
     try:
         float(string)
