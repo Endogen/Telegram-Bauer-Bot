@@ -38,17 +38,8 @@ def build_menu(buttons, n_cols=1, header_buttons=None, footer_buttons=None):
     return menu
 
 
-def is_bool(v):
-    return v.lower() in ("yes", "true", "t", "1", "no", "false", "f", "0")
-
-
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
-
-
-def bool2str(b):
-    """ Return 'Yes' for True and 'No' for False """
-    return "Yes" if b else "No"
 
 
 def split_msg(msg, max_len=None, split_char="\n", only_one=False):

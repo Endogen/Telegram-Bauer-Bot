@@ -10,7 +10,6 @@ from telegram import ChatAction
 from bauer.config import ConfigManager
 
 
-# TODO: Save plugin config instance if available
 class BauerPluginInterface:
 
     def __enter__(self):
@@ -51,10 +50,12 @@ class BauerPlugin(BauerPluginInterface):
         super().__init__()
         self._tgb = tg_bot
 
+        # Create access to plugin config file
+        cfg_path = os.path.join(self.config_path(), f"{self.plugin_name()}.json")
+        self._config = ConfigManager(cfg_path)
+
         # Save path to database file
         self._db_path = os.path.join(self.data_path(), f"{self.plugin_name()}.db")
-        # Save path to config file
-        self._cfg_path = os.path.join(self.config_path(), f"{self.plugin_name()}.json")
 
     def plugins(self):
         return self._tgb.plugins
@@ -62,23 +63,20 @@ class BauerPlugin(BauerPluginInterface):
     def cfg_get(self, *keys, plugin=True):
         if plugin:
             keys = (self.plugin_name(),) + keys
-            cfg = ConfigManager(self._cfg_path)
-            return cfg.get(*keys)
+            return self._config.get(*keys)
         return self._tgb.config.get(*keys)
 
     # TODO: Check if value set in plugin1 is also present in plugin2
     def cfg_set(self, value, *keys, plugin=True):
         if plugin:
             keys = (self.plugin_name(),) + keys
-            cfg = ConfigManager(self._cfg_path)
-            cfg.set(value, *keys)
+            self._config.set(value, *keys)
         else:
             self._tgb.config.set(value, *keys)
 
     def cfg_del(self, key):
         keys = [self.plugin_name(), key]
-        cfg = ConfigManager(self._cfg_path)
-        cfg.remove(keys)
+        self._config.remove(keys)
 
     def add_plugin(self, module_name):
         self._tgb.add_plugin(module_name)
@@ -196,6 +194,13 @@ class BauerPlugin(BauerPluginInterface):
             if plugin.plugin_name() == plugin_name.lower():
                 return True
         return False
+
+    def notify(self, exception):
+        for admin in self.cfg_get("admin", "ids", plugin=False):
+            self._tgb.updater.bot.send_message(
+                text=f"ERROR: {repr(exception)}",
+                chat_id=admin)
+        return exception
 
     @staticmethod
     def threaded(fn):

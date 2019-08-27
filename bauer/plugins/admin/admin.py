@@ -4,7 +4,6 @@ import bauer.emoji as emo
 
 from telegram import ParseMode
 from bauer.plugin import BauerPlugin
-from bauer.config import ConfigManager as Cfg
 
 
 class Admin(BauerPlugin):
@@ -27,26 +26,23 @@ class Admin(BauerPlugin):
 
         # ---- Execute raw SQL ----
         if command == "sql":
-            if self.cfg_get("database", "use_db"):
-                args.pop(0)
+            args.pop(0)
 
-                plugin = args[0].lower()
-                args.pop(0)
+            plugin = args[0].lower()
+            args.pop(0)
 
-                sql = " ".join(args)
-                res = self.execute_sql(sql, plugin=plugin)
+            sql = " ".join(args)
+            res = self.execute_sql(sql, plugin=plugin)
 
-                if res["success"]:
-                    if res["data"]:
-                        msg = '\n'.join(str(s) for s in res["data"])
-                    else:
-                        msg = f"{emo.INFO} No data returned"
+            if res["success"]:
+                if res["data"]:
+                    msg = '\n'.join(str(s) for s in res["data"])
                 else:
-                    msg = f"{emo.ERROR} {res['data']}"
-
-                update.message.reply_text(msg)
+                    msg = f"{emo.INFO} No data returned"
             else:
-                update.message.reply_text(f"{emo.INFO} Database not enabled")
+                msg = f"{emo.ERROR} {res['data']}"
+
+            update.message.reply_text(msg)
 
         # ---- Change configuration ----
         elif command == "cfg":
@@ -68,7 +64,7 @@ class Admin(BauerPlugin):
                 v = None
 
             try:
-                Cfg.set(v, *args)
+                self.cfg_set(v, *args, plugin=False)
             except Exception as e:
                 logging.error(e)
                 msg = f"{emo.ERROR} {e}"

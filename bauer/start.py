@@ -10,6 +10,8 @@ from logging.handlers import TimedRotatingFileHandler
 
 
 # TODO: Add option to send exceptions to admin ids
+# TODO: Remove 'use_db' from config and add it to command line arguments
+# TODO: Add more debug messages
 class Bauer:
 
     def __init__(self):

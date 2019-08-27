@@ -12,13 +12,6 @@ class Toplist(BauerPlugin):
     @BauerPlugin.threaded
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
-        if not self.cfg_get("database", "use_db"):
-            update.message.reply_text(
-                text=f"{emo.INFO} *Database not enabled*\n"
-                     f"Not possible to use `/{self.get_handle()} command`",
-                parse_mode=ParseMode.MARKDOWN)
-            return
-
         if not args:
             update.message.reply_text(
                 text=f"Usage:\n{self.get_usage()}",

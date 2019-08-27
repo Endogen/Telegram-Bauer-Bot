@@ -87,10 +87,9 @@ class Tip(BauerPlugin):
 
         # Process actual tipping
         if bis.tip(to_user, amount):
-            if self.cfg_get("database", "use_db"):
-                # Save tipping in database
-                statement = self.get_resource("insert_tip.sql")
-                self.execute_sql(statement, from_user, to_user, amount)
+            # Save tipping in database
+            statement = self.get_resource("insert_tip.sql")
+            self.execute_sql(statement, from_user, to_user, amount)
 
             # Send success message
             bot.edit_message_text(
