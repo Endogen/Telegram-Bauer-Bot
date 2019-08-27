@@ -13,7 +13,7 @@ class ConfigManager:
     _cfg_file = con.FILE_CFG
     _cfg = dict()
 
-    ignore = False
+    ignore = False  # TODO: Still needed?
 
     def __init__(self, config_file):
         self._cfg_file = config_file
@@ -55,6 +55,7 @@ class ConfigManager:
 
         return value if value is not None else None
 
+    # TODO: Add try / except
     def set(self, value, *keys):
         if not self._cfg:
             self._read_cfg()
@@ -66,22 +67,30 @@ class ConfigManager:
 
         tmp_cfg[keys[-1]] = value
 
-        self.ignore = True
+        self.ignore = True  # TODO: Still needed?
         self._write_cfg()
 
-    def remove(self, *keys, delete_empty=True):
+    def remove(self, keys):
         if not self._cfg:
             self._read_cfg()
 
-        for key in keys:
-            if key in self._cfg:
-                del self._cfg[key]
-                self._write_cfg()
+        try:
+            del self._cfg[keys[0]][keys[1]]
+            self._write_cfg()
+        except KeyError as e:
+            err = f"Can't remove key '{keys}'"
+            logging.debug(f"{repr(e)} - {err}")
+            return
 
-        # Remove config file and folder if empty
-        if delete_empty and len(self._cfg) == 0:
-            os.remove(self._cfg_file)
-            os.rmdir(os.path.dirname(self._cfg_file))
+        # Remove file and folder if config empty
+        if len(self._cfg[keys[0]]) == 0:
+            try:
+                os.remove(self._cfg_file)
+                os.rmdir(os.path.dirname(self._cfg_file))
+            except Exception as e:
+                err = f"Can't remove config {self._cfg_file}"
+                logging.debug(f"{repr(e)} - {err}")
+
 
 """
 class ChangeHandler(FileSystemEventHandler):
