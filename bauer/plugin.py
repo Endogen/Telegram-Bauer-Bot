@@ -187,16 +187,11 @@ class BauerPlugin(BauerPluginInterface):
             plugin = self.plugin_name()
         return os.path.join(c.DIR_SRC, c.DIR_PLG, plugin)
 
-    # TODO: Test this
     def plugin_available(self, plugin_name):
-        plugin_found = False
-
-        for plugin in self._tgb.plugins:
-            plg_name = type(self).__name__.lower()
-            if plg_name == plugin_name.lower():
-                plugin_found = True
-
-        return plugin_found
+        for plugin in self.plugins():
+            if plugin.plugin_name() == plugin_name.lower():
+                return True
+        return False
 
     @staticmethod
     def threaded(fn):
