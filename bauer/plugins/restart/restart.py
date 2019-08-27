@@ -42,11 +42,10 @@ class Restart(BauerPlugin):
 
         user_id = update.effective_user.id
 
-        # TODO: Folder will not be created automatically
-        self.cfg_set(user_id, "user_id", plugin=False)
-        self.cfg_set(m.message_id, "message", plugin=False)
+        self.cfg_set(user_id, "user_id")
+        self.cfg_set(m.message_id, "message")
 
-        m_name = sys.__spec__.name  # TODO: Or return to '__spec__.name'?
+        m_name = __spec__.name
         m_name = m_name[:m_name.index(".")]
 
         time.sleep(1)
