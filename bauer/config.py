@@ -56,6 +56,9 @@ class ConfigManager:
         return value if value is not None else None
 
     def set(self, value, *keys):
+        if not self._cfg:
+            self._read_cfg()
+
         tmp_cfg = self._cfg
 
         for key in keys[:-1]:
@@ -67,14 +70,16 @@ class ConfigManager:
         self._write_cfg()
 
     def remove(self, *keys, delete_empty=True):
+        if not self._cfg:
+            self._read_cfg()
+
         for key in keys:
             if key in self._cfg:
                 del self._cfg[key]
                 self._write_cfg()
 
-        # TODO: Test it
         # Remove config file and folder if empty
-        if delete_empty and len(self._cfg.keys) < 1:
+        if delete_empty and len(self._cfg) == 0:
             os.remove(self._cfg_file)
             os.rmdir(os.path.dirname(self._cfg_file))
 
