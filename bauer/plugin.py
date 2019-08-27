@@ -61,20 +61,20 @@ class BauerPlugin(BauerPluginInterface):
     def cfg_get(self, *keys, plugin=True):
         if plugin:
             cfg = ConfigManager(self._cfg_path)
-            return cfg.get(keys)
-        return self._tgb.config.get(keys)
+            return cfg.get(*keys)
+        return self._tgb.config.get(*keys)
 
     # TODO: Check if value set in plugin1 is also present in plugin2
     def cfg_set(self, value, *keys, plugin=True):
         if plugin:
             cfg = ConfigManager(self._cfg_path)
-            cfg.set(value, keys)
+            cfg.set(value, *keys)
         else:
-            self._tgb.config.set(value, keys)
+            self._tgb.config.set(value, *keys)
 
     def cfg_del(self, *keys, delete_empty=True):
         cfg = ConfigManager(self._cfg_path)
-        cfg.remove(keys, delete_empty)
+        cfg.remove(*keys, delete_empty=delete_empty)
 
     def add_plugin(self, module_name):
         self._tgb.add_plugin(module_name)
@@ -82,9 +82,9 @@ class BauerPlugin(BauerPluginInterface):
     def remove_plugin(self, module_name):
         self._tgb.remove_plugin(module_name)
 
-    def get_resource(self, filename, from_plugin=True):
+    def get_resource(self, filename, plugin=True):
         """ Return content of file """
-        if from_plugin:
+        if plugin:
             path = os.path.join(self.resource_path(), filename)
         else:
             path = os.path.join(c.DIR_RES, filename)
@@ -101,7 +101,7 @@ class BauerPlugin(BauerPluginInterface):
         res = {"success": None, "data": None}
 
         # Check if database usage is enabled
-        if not self.cfg_get("database", "use_db"):
+        if not self.cfg_get("database", "use_db", plugin=False):
             res["data"] = "Database disabled"
             res["success"] = False
             return res
@@ -153,7 +153,7 @@ class BauerPlugin(BauerPluginInterface):
         cur = con.cursor()
         exists = False
 
-        statement = self.get_resource("table_exists.sql", from_plugin=False)
+        statement = self.get_resource("table_exists.sql", plugin=False)
 
         try:
             if cur.execute(statement, [table_name]).fetchone():
@@ -229,7 +229,7 @@ class BauerPlugin(BauerPluginInterface):
     @classmethod
     def only_owner(cls, func):
         def _only_owner(self, bot, update, **kwargs):
-            if update.effective_user.id in Cfg.get("admin", "ids"):
+            if update.effective_user.id in self.cfg_get("admin", "ids", plugin=False):
                 return func(self, bot, update, **kwargs)
         return _only_owner
 
