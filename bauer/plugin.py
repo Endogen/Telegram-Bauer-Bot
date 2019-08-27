@@ -10,6 +10,7 @@ from telegram import ChatAction
 from bauer.config import ConfigManager
 
 
+# TODO: Save plugin config instance if available
 class BauerPluginInterface:
 
     def __enter__(self):
@@ -60,6 +61,7 @@ class BauerPlugin(BauerPluginInterface):
 
     def cfg_get(self, *keys, plugin=True):
         if plugin:
+            keys = (self.plugin_name(),) + keys
             cfg = ConfigManager(self._cfg_path)
             return cfg.get(*keys)
         return self._tgb.config.get(*keys)
@@ -67,14 +69,16 @@ class BauerPlugin(BauerPluginInterface):
     # TODO: Check if value set in plugin1 is also present in plugin2
     def cfg_set(self, value, *keys, plugin=True):
         if plugin:
+            keys = (self.plugin_name(),) + keys
             cfg = ConfigManager(self._cfg_path)
             cfg.set(value, *keys)
         else:
             self._tgb.config.set(value, *keys)
 
-    def cfg_del(self, *keys, delete_empty=True):
+    def cfg_del(self, key):
+        keys = [self.plugin_name(), key]
         cfg = ConfigManager(self._cfg_path)
-        cfg.remove(*keys, delete_empty=delete_empty)
+        cfg.remove(keys)
 
     def add_plugin(self, module_name):
         self._tgb.add_plugin(module_name)
