@@ -23,6 +23,7 @@ class Logfile(BauerPlugin):
                 file = open(log_file, 'rb')
             except Exception as e:
                 logging.error(e)
+                self.notify(e)
                 file = None
         else:
             file = None

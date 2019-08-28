@@ -30,7 +30,6 @@ class BauerPluginInterface:
         method = inspect.currentframe().f_code.co_name
         raise NotImplementedError(f"Interface method '{method}' not implemented")
 
-    # TODO: Read .md file from plugins dir and show content
     def get_usage(self):
         """ Show how to use the command """
         return None
@@ -66,7 +65,6 @@ class BauerPlugin(BauerPluginInterface):
             return self._config.get(*keys)
         return self._tgb.config.get(*keys)
 
-    # TODO: Check if value set in plugin1 is also present in plugin2
     def cfg_set(self, value, *keys, plugin=True):
         if plugin:
             keys = (self.plugin_name(),) + keys
@@ -96,6 +94,7 @@ class BauerPlugin(BauerPluginInterface):
                 return f.read()
         except Exception as e:
             logging.error(e)
+            self.notify(e)
             return None
 
     def execute_sql(self, sql, *args, plugin=None):
@@ -131,6 +130,8 @@ class BauerPlugin(BauerPluginInterface):
             res["success"] = True
         except Exception as e:
             logging.error(e)
+            self.notify(e)
+
             res["data"] = str(e)
             res["success"] = False
 
@@ -162,6 +163,7 @@ class BauerPlugin(BauerPluginInterface):
                 exists = True
         except Exception as e:
             logging.error(e)
+            self.notify(e)
 
         con.close()
         return exists
@@ -196,10 +198,11 @@ class BauerPlugin(BauerPluginInterface):
         return False
 
     def notify(self, exception):
-        for admin in self.cfg_get("admin", "ids", plugin=False):
-            self._tgb.updater.bot.send_message(
-                text=f"ERROR: {repr(exception)}",
-                chat_id=admin)
+        if self.cfg_get("admin", "notify_on_error"):
+            for admin in self.cfg_get("admin", "ids", plugin=False):
+                self._tgb.updater.bot.send_message(
+                    text=f"ERROR: {repr(exception)}",
+                    chat_id=admin)
         return exception
 
     @staticmethod

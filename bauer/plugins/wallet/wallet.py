@@ -209,6 +209,7 @@ class Wallet(BauerPlugin):
                 bis.load_wallet()
             except Exception as e:
                 logging.error(e)
+                self.notify(e)
                 bis = None
 
             if bis:

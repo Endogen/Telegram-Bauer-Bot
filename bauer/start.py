@@ -9,7 +9,7 @@ from bauer.config import ConfigManager as Cfg
 from logging.handlers import TimedRotatingFileHandler
 
 
-# TODO: Add option to send exceptions to admin ids
+# TODO: Add 'token = input("Enter Telegram token: ")'
 # TODO: Remove 'use_db' from config and add it to command line arguments
 # TODO: Add more debug messages
 class Bauer:
