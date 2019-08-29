@@ -9,9 +9,8 @@ from bauer.config import ConfigManager as Cfg
 from logging.handlers import TimedRotatingFileHandler
 
 
-# TODO: Add 'token = input("Enter Telegram token: ")'
-# TODO: Remove 'use_db' from config and add it to command line arguments
 # TODO: Add more debug messages
+# TODO: Add docstrings
 class Bauer:
 
     def __init__(self):
@@ -27,7 +26,7 @@ class Bauer:
 
     # Parse arguments
     def _parse_args(self):
-        desc = "Telegram bot for Bismuth (BIS) cryptocurrency"
+        desc = "Python Telegram Bot"
         parser = ArgumentParser(description=desc)
 
         # Save logfile
@@ -64,6 +63,15 @@ class Bauer:
             help="set Telegram bot token",
             required=False,
             default=None)
+
+        # Bot token via input
+        parser.add_argument(
+            "--input-tkn",
+            dest="input_token",
+            action="store_true",
+            help="set Telegram bot token",
+            required=False,
+            default=False)
 
         return parser.parse_args()
 
@@ -108,6 +116,8 @@ class Bauer:
 
     # Read bot token from file
     def _get_bot_token(self):
+        if self.args.input_token:
+            return input("Enter Telegram bot token: ")
         if self.args.token:
             return self.args.token
 

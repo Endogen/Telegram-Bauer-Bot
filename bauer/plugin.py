@@ -10,6 +10,9 @@ from telegram import ChatAction
 from bauer.config import ConfigManager
 
 
+# TODO: Add option for command to only ...
+# TODO: Merge with BauerPlugin?
+# TODO: Remove 'Bauer' / 'bauer' everywhere and generalize things
 class BauerPluginInterface:
 
     def __enter__(self):
@@ -20,27 +23,11 @@ class BauerPluginInterface:
         """ This method gets executed after the plugin gets loaded """
         pass
 
-    def get_handle(self):
-        """ Command string that triggers the plugin """
-        method = inspect.currentframe().f_code.co_name
-        raise NotImplementedError(f"Interface method '{method}' not implemented")
-
+    # TODO: Rename this
     def get_action(self, bot, update, args):
         """ Logic that gets executed if command gets triggered """
         method = inspect.currentframe().f_code.co_name
         raise NotImplementedError(f"Interface method '{method}' not implemented")
-
-    def get_usage(self):
-        """ Show how to use the command """
-        return None
-
-    def get_description(self):
-        """ Short description what the command does """
-        return None
-
-    def get_category(self):
-        """ Category for command """
-        return None
 
 
 class BauerPlugin(BauerPluginInterface):
@@ -55,6 +42,15 @@ class BauerPlugin(BauerPluginInterface):
 
         # Save path to database file
         self._db_path = os.path.join(self.data_path(), f"{self.plugin_name()}.db")
+
+    def usage(self):
+        """ Show how to use the command """
+        usage = self.get_resource("usage.md")
+        return usage.replace("{plugin_name}", self.plugin_name())
+
+    def handle(self):
+        """ Command string that triggers the plugin """
+        return self.cfg_get("handle")
 
     def plugins(self):
         return self._tgb.plugins
@@ -239,23 +235,3 @@ class BauerPlugin(BauerPluginInterface):
             if update.effective_user.id in self.cfg_get("admin", "ids", plugin=False):
                 return func(self, bot, update, **kwargs)
         return _only_owner
-
-
-# Categories for commands
-class Category:
-    # TODO: Don't hardcode categories
-    AUTOGAME = "Autogame"
-    BISMUTH = "Bismuth"
-    DRAGGINATOR = "Dragginator"
-    HYPERNODES = "Hypernodes"
-    BOT = "Bot"
-
-    @classmethod
-    def get_categories(cls):
-        categories = list()
-
-        for k, v in vars(cls).items():
-            if k.isupper() and isinstance(v, str):
-                categories.append({k: v})
-
-        return categories

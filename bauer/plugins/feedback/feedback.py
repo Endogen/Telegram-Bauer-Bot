@@ -1,7 +1,7 @@
 import bauer.emoji as emo
 
 from telegram import ParseMode
-from bauer.plugin import BauerPlugin, Category
+from bauer.plugin import BauerPlugin
 
 
 class Feedback(BauerPlugin):

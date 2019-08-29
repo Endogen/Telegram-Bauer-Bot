@@ -95,7 +95,7 @@ class TelegramBot:
                 try:
                     for handler in self.dispatcher.handlers[0]:
                         if isinstance(handler, CommandHandler):
-                            if handler.command[0] == plugin.get_handle():
+                            if handler.command[0] == plugin.handle():
                                 self.dispatcher.handlers[0].remove(handler)
                                 break
 
@@ -136,7 +136,7 @@ class TelegramBot:
         """ Add CommandHandler for given plugin """
         self.dispatcher.add_handler(
             CommandHandler(
-                plugin.get_handle(),
+                plugin.handle(),
                 plugin.get_action,
                 pass_args=True))
 

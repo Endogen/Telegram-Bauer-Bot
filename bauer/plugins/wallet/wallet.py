@@ -8,10 +8,11 @@ from MyQR import myqr
 from bismuthclient.bismuthutil import BismuthUtil
 from telegram.ext import CallbackQueryHandler
 from telegram import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
-from bauer.plugin import BauerPlugin, Category
+from bauer.plugin import BauerPlugin
 from bauer.plugins.wallet.bismuth import Bismuth
 
 
+# TODO: Rename to 'bismuth'
 class Wallet(BauerPlugin):
 
     TERMS_FILE = "terms.md"
@@ -27,15 +28,12 @@ class Wallet(BauerPlugin):
             self.execute_sql(sql)
         return self
 
-    def get_handle(self):
-        return "wallet"
-
     @BauerPlugin.threaded
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         if not args:
             update.message.reply_text(
-                text=f"Usage:\n{self.get_usage()}",
+                text=f"Usage:\n{self.usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -108,7 +106,7 @@ class Wallet(BauerPlugin):
             if len(args) != 3:
                 update.message.reply_text(
                     text=f"{emo.ERROR} Wrong syntax\n"
-                         f"`/{self.get_handle()} withdraw <address> <amount>`",
+                         f"`/{self.handle()} withdraw <address> <amount>`",
                     parse_mode=ParseMode.MARKDOWN)
                 return
 
@@ -177,13 +175,13 @@ class Wallet(BauerPlugin):
         else:
             update.message.reply_text(
                 text=f"{emo.ERROR} Wrong sub-command:\n"
-                     f"{self.get_usage()}",
+                     f"{self.usage()}",
                 parse_mode=ParseMode.MARKDOWN)
 
     def _wallet_exists(self, update, username):
         if not Bismuth.wallet_exists(username):
             update.message.reply_text(
-                text=f"Create a wallet first with:\n`/{self.get_handle()} create`",
+                text=f"Create a wallet first with:\n`/{self.handle()} create`",
                 parse_mode=ParseMode.MARKDOWN)
             return False
         return True
@@ -225,16 +223,3 @@ class Wallet(BauerPlugin):
         """ Add flag that user accepted terms """
         statement = self.get_resource("insert_terms.sql")
         self.execute_sql(statement, username, 1)
-
-    def get_usage(self):
-        return f"`/{self.get_handle()} create`\n" \
-               f"`/{self.get_handle()} address`\n" \
-               f"`/{self.get_handle()} deposit`\n" \
-               f"`/{self.get_handle()} withdraw`\n" \
-               f"`/{self.get_handle()} balance`"
-
-    def get_description(self):
-        return "Interact with your wallet"
-
-    def get_category(self):
-        return Category.BISMUTH

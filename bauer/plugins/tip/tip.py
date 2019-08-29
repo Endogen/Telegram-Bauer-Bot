@@ -2,7 +2,7 @@ import bauer.emoji as emo
 import bauer.utils as utl
 
 from telegram import ParseMode
-from bauer.plugin import BauerPlugin, Category
+from bauer.plugin import BauerPlugin
 from bauer.plugins.wallet.bismuth import Bismuth
 
 

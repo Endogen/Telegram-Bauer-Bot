@@ -7,6 +7,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 
+# TODO: There should be only one instance of watchdog that checks for changes everywhere
 # TODO: Why are changes not recognized?
 class ConfigManager:
 
@@ -48,14 +49,13 @@ class ConfigManager:
         for key in keys:
             try:
                 value = value[key]
-            except KeyError as e:
+            except Exception as e:
                 err = f"Couldn't read '{key}' from {self._cfg_file}"
                 logging.debug(f"{repr(e)} - {err}")
                 return None
 
         return value if value is not None else None
 
-    # TODO: Add try / except
     def set(self, value, *keys):
         if not self._cfg:
             self._read_cfg()
@@ -63,7 +63,12 @@ class ConfigManager:
         tmp_cfg = self._cfg
 
         for key in keys[:-1]:
-            tmp_cfg = tmp_cfg.setdefault(key, {})
+            try:
+                tmp_cfg = tmp_cfg.setdefault(key, {})
+            except Exception as e:
+                err = f"Couldn't set '{key}' in {self._cfg_file}"
+                logging.debug(f"{repr(e)} - {err}")
+                return
 
         tmp_cfg[keys[-1]] = value
 

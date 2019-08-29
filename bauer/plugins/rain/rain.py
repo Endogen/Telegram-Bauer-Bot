@@ -1,4 +1,4 @@
-from bauer.plugin import BauerPlugin, Category
+from bauer.plugin import BauerPlugin
 from telegram import ParseMode
 
 
