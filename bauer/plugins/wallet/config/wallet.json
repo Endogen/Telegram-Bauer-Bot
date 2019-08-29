@@ -2,7 +2,6 @@
     "wallet": {
         "description": "Interact with BIS wallet",
         "category": "Bismuth",
-        "handle": "wallet",
-        "access": ["134166731"]
+        "handle": "wallet"
     }
 }

@@ -8,16 +8,13 @@ from bauer.plugin import BauerPlugin
 
 class Admin(BauerPlugin):
 
-    def get_handle(self):
-        return "admin"
-
     @BauerPlugin.threaded
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def get_action(self, bot, update, args):
         if not args:
             update.message.reply_text(
-                text=f"Usage:\n{self.get_usage()}",
+                text=f"Usage:\n{self.usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -105,8 +102,3 @@ class Admin(BauerPlugin):
             update.message.reply_text(
                 text=f"Unknown command `{args[0]}`",
                 parse_mode=ParseMode.MARKDOWN)
-
-    def get_usage(self):
-        return f"`/{self.get_handle()} sql <plugin> <statement>`\n" \
-               f"`/{self.get_handle()} cfg <key> (<sub-key>) <value>`\n" \
-               f"`/{self.get_handle()} plg add|remove <plugin name>`"

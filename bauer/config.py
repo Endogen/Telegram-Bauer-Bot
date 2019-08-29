@@ -8,7 +8,7 @@ from watchdog.events import FileSystemEventHandler
 
 
 # TODO: There should be only one instance of watchdog that checks for changes everywhere
-# TODO: Why are changes not recognized?
+# TODO: Why are changes to config not recognized?
 class ConfigManager:
 
     _cfg_file = con.FILE_CFG

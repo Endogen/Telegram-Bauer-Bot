@@ -13,9 +13,6 @@ class Backup(BauerPlugin):
 
     BCK_DIR = "backups"
 
-    def get_handle(self):
-        return "backup"
-
     @BauerPlugin.threaded
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing

@@ -21,6 +21,7 @@ class Help(BauerPlugin):
                     lst = cat_dict[p.get_category()]
                     lst.append(des)
 
+        # TODO: Should change money
         msg = "*Available commands*\n\n"
         for c in Category.get_categories():
             v = next(iter(c.values()))

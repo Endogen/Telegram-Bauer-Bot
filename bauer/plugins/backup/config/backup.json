@@ -1,0 +1,8 @@
+{
+    "backup": {
+        "description": "Backup whole bot",
+        "category": "Bot",
+        "handle": "backup",
+        "access": []
+    }
+}

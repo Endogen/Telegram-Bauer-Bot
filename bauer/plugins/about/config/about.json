@@ -1,0 +1,8 @@
+{
+    "about": {
+        "description": "Info about bot and creator",
+        "category": "Bot",
+        "handle": "about",
+        "access": []
+    }
+}

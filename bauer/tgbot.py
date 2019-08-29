@@ -134,6 +134,11 @@ class TelegramBot:
 
     def _add_handler(self, plugin):
         """ Add CommandHandler for given plugin """
+        if not isinstance(plugin.handle(), str):
+            raise TypeError("Command handle must be a string")
+        if not plugin.handle():
+            raise ValueError("Command handle can't be empty")
+
         self.dispatcher.add_handler(
             CommandHandler(
                 plugin.handle(),

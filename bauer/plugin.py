@@ -10,10 +10,20 @@ from telegram import ChatAction
 from bauer.config import ConfigManager
 
 
-# TODO: Add option for command to only ...
-# TODO: Merge with BauerPlugin?
+# TODO: Complete category stuff
 # TODO: Remove 'Bauer' / 'bauer' everywhere and generalize things
-class BauerPluginInterface:
+class BauerPlugin:
+
+    def __init__(self, tg_bot):
+        super().__init__()
+        self._tgb = tg_bot
+
+        # Create access to plugin config file
+        cfg_path = os.path.join(self.config_path(), f"{self.plugin_name()}.json")
+        self._config = ConfigManager(cfg_path)
+
+        # Save path to database file
+        self._db_path = os.path.join(self.data_path(), f"{self.plugin_name()}.db")
 
     def __enter__(self):
         """ This method gets executed before the plugin gets loaded """
@@ -29,24 +39,14 @@ class BauerPluginInterface:
         method = inspect.currentframe().f_code.co_name
         raise NotImplementedError(f"Interface method '{method}' not implemented")
 
-
-class BauerPlugin(BauerPluginInterface):
-
-    def __init__(self, tg_bot):
-        super().__init__()
-        self._tgb = tg_bot
-
-        # Create access to plugin config file
-        cfg_path = os.path.join(self.config_path(), f"{self.plugin_name()}.json")
-        self._config = ConfigManager(cfg_path)
-
-        # Save path to database file
-        self._db_path = os.path.join(self.data_path(), f"{self.plugin_name()}.db")
-
     def usage(self):
         """ Show how to use the command """
         usage = self.get_resource("usage.md")
-        return usage.replace("{plugin_name}", self.plugin_name())
+
+        if not usage:
+            return None
+
+        return usage.replace("{{plugin_name}}", self.plugin_name())
 
     def handle(self):
         """ Command string that triggers the plugin """
@@ -232,6 +232,11 @@ class BauerPlugin(BauerPluginInterface):
     @classmethod
     def only_owner(cls, func):
         def _only_owner(self, bot, update, **kwargs):
-            if update.effective_user.id in self.cfg_get("admin", "ids", plugin=False):
+            user_id = update.effective_user.id
+
+            if user_id in self.cfg_get("admin", "ids", plugin=False):
                 return func(self, bot, update, **kwargs)
+            if user_id in self.cfg_get("access"):
+                return func(self, bot, update, **kwargs)
+
         return _only_owner
