@@ -32,7 +32,6 @@ class BauerPlugin:
         """ This method gets executed after the plugin gets loaded """
         pass
 
-    # TODO: Rename this
     def execute(self, bot, update, args):
         """ Logic that gets executed if command gets triggered """
         method = inspect.currentframe().f_code.co_name
