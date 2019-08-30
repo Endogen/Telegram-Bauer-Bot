@@ -52,6 +52,12 @@ class BauerPlugin:
         """ Command string that triggers the plugin """
         return self.cfg_get("handle")
 
+    def category(self):
+        return self.cfg_get("category")
+
+    def description(self):
+        return self.cfg_get("description")
+
     def plugins(self):
         return self._tgb.plugins
 

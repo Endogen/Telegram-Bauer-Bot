@@ -134,6 +134,7 @@ class TelegramBot:
 
     def _add_handler(self, plugin):
         """ Add CommandHandler for given plugin """
+        # TODO: How to do these checks differently and also check if config file is there?
         if not isinstance(plugin.handle(), str):
             raise TypeError("Command handle must be a string")
         if not plugin.handle():
