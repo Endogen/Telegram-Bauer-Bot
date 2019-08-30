@@ -8,7 +8,7 @@ class About(BauerPlugin):
 
     @BauerPlugin.threaded
     @BauerPlugin.send_typing
-    def get_action(self, bot, update, args):
+    def execute(self, bot, update, args):
         update.message.reply_text(
             text=self.get_resource(self.ABOUT_FILE),
             parse_mode=ParseMode.MARKDOWN,

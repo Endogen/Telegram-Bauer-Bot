@@ -14,7 +14,7 @@ class Logfile(BauerPlugin):
     @BauerPlugin.threaded
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing
-    def get_action(self, bot, update, args):
+    def execute(self, bot, update, args):
         base_dir = os.path.abspath('./')
         log_file = os.path.join(base_dir, con.DIR_LOG, con.FILE_LOG)
 

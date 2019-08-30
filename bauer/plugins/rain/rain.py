@@ -15,7 +15,7 @@ class Rain(BauerPlugin):
         return "rain"
 
     @BauerPlugin.send_typing
-    def get_action(self, bot, update, args):
+    def execute(self, bot, update, args):
         if not args:
             update.message.reply_text(
                 text=f"Usage:\n{self.get_usage()}",

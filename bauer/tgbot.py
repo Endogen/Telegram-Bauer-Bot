@@ -143,7 +143,7 @@ class TelegramBot:
         self.dispatcher.add_handler(
             CommandHandler(
                 plugin.handle(),
-                plugin.get_action,
+                plugin.execute,
                 pass_args=True))
 
     def _download(self, bot, update):

@@ -10,7 +10,6 @@ from telegram import ChatAction
 from bauer.config import ConfigManager
 
 
-# TODO: Complete category stuff
 # TODO: Remove 'Bauer' / 'bauer' everywhere and generalize things
 class BauerPlugin:
 
@@ -34,7 +33,7 @@ class BauerPlugin:
         pass
 
     # TODO: Rename this
-    def get_action(self, bot, update, args):
+    def execute(self, bot, update, args):
         """ Logic that gets executed if command gets triggered """
         method = inspect.currentframe().f_code.co_name
         raise NotImplementedError(f"Interface method '{method}' not implemented")

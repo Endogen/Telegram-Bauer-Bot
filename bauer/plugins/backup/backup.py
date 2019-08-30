@@ -16,7 +16,7 @@ class Backup(BauerPlugin):
     @BauerPlugin.threaded
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing
-    def get_action(self, bot, update, args):
+    def execute(self, bot, update, args):
         # List of folders to exclude from backup
         exclude = [con.DIR_LOG, self.BCK_DIR, "__pycache__"]
 

@@ -9,7 +9,7 @@ class Help(BauerPlugin):
 
     @BauerPlugin.threaded
     @BauerPlugin.send_typing
-    def get_action(self, bot, update, args):
+    def execute(self, bot, update, args):
         categories = OrderedDict()
 
         for p in self.plugins():

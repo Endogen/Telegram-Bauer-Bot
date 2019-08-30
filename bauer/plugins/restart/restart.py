@@ -36,7 +36,7 @@ class Restart(BauerPlugin):
     @BauerPlugin.threaded
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing
-    def get_action(self, bot, update, args):
+    def execute(self, bot, update, args):
         msg = f"{emo.WAIT} Restarting bot..."
         m = update.message.reply_text(msg)
 

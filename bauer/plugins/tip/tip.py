@@ -16,15 +16,12 @@ class Tip(BauerPlugin):
             self.execute_sql(sql)
         return self
 
-    def get_handle(self):
-        return "tip"
-
     @BauerPlugin.threaded
     @BauerPlugin.send_typing
-    def get_action(self, bot, update, args):
+    def execute(self, bot, update, args):
         if not args:
             update.message.reply_text(
-                text=f"Usage:\n{self.get_usage()}",
+                text=f"Usage:\n{self.usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -44,7 +41,7 @@ class Tip(BauerPlugin):
         else:
             # Wrong syntax
             update.message.reply_text(
-                text=f"{emo.ERROR} Wrong number of arguments:\n{self.get_usage()}",
+                text=f"{emo.ERROR} Wrong number of arguments:\n{self.usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -53,7 +50,7 @@ class Tip(BauerPlugin):
         # Check if username starts with @
         if not to_user.startswith("@"):
             update.message.reply_text(
-                text=f"{emo.ERROR} Username not valid:\n{self.get_usage()}",
+                text=f"{emo.ERROR} Username not valid:\n{self.usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -103,13 +100,3 @@ class Tip(BauerPlugin):
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=f"{emo.ERROR} Something went wrong")
-
-    def get_usage(self):
-        return f"`/{self.get_handle()} <@username> <amount>`\n" \
-               f"`/{self.get_handle()} <@username>`"
-
-    def get_description(self):
-        return "Tip BIS coins to user"
-
-    def get_category(self):
-        return Category.BISMUTH

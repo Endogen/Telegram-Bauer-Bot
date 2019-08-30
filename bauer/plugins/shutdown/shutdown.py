@@ -12,7 +12,7 @@ class Shutdown(BauerPlugin):
     @BauerPlugin.threaded
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing
-    def get_action(self, bot, update, args):
+    def execute(self, bot, update, args):
         msg = f"{emo.GOODBYE} Shutting down..."
         update.message.reply_text(msg)
 
