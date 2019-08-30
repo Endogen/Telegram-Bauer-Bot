@@ -1,4 +1,3 @@
-import collections
 from collections import OrderedDict
 
 from telegram import ParseMode
