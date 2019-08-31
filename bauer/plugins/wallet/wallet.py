@@ -12,7 +12,6 @@ from bauer.plugin import BauerPlugin
 from bauer.plugins.wallet.bismuth import Bismuth
 
 
-# TODO: Rename to 'bismuth'
 class Wallet(BauerPlugin):
 
     TERMS_FILE = "terms.md"

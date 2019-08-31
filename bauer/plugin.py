@@ -10,7 +10,6 @@ from telegram import ChatAction
 from bauer.config import ConfigManager
 
 
-# TODO: Remove 'Bauer' / 'bauer' everywhere and generalize things
 class BauerPlugin:
 
     def __init__(self, tg_bot):

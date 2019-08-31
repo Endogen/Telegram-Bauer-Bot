@@ -6,7 +6,6 @@ import bauer.constants as c
 from bismuthclient.bismuthclient import BismuthClient
 
 
-# TODO: Rename to 'bisclient'
 class Bismuth:
 
     WALLET_DIR = os.path.join(c.DIR_SRC, c.DIR_PLG, "wallet", "wallets")
