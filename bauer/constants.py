@@ -2,6 +2,7 @@
 FILE_CFG = "config.json"
 FILE_TKN = "token.json"
 FILE_LOG = "bauer.log"
+FILE_USG = "usage.md"
 
 # Folders
 DIR_RES = "resources"

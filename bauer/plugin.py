@@ -38,12 +38,13 @@ class BauerPlugin:
 
     def usage(self):
         """ Show how to use the command """
-        usage = self.get_resource("usage.md")
+        usage = self.get_resource(c.FILE_USG)
 
-        if not usage:
-            return None
+        if usage:
+            usage = usage.replace("{{plugin_name}}", self.plugin_name())
+            return usage
 
-        return usage.replace("{{plugin_name}}", self.plugin_name())
+        return None
 
     def handle(self):
         """ Command string that triggers the plugin """
@@ -190,7 +191,7 @@ class BauerPlugin:
             plugin = self.plugin_name()
         return os.path.join(c.DIR_SRC, c.DIR_PLG, plugin)
 
-    def plugin_available(self, plugin_name):
+    def plugin_active(self, plugin_name):
         for plugin in self.plugins():
             if plugin.plugin_name() == plugin_name.lower():
                 return True
