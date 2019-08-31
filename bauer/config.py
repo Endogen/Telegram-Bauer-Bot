@@ -7,27 +7,38 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 
-# TODO: There should be only one instance of watchdog that checks for changes everywhere
-# TODO: Why are changes to config not recognized?
-class ConfigManager:
+# TODO: Does ConfigManager need not be loaded on initialization?
+class ConfigManager(FileSystemEventHandler):
 
     _cfg_file = con.FILE_CFG
     _cfg = dict()
 
-    ignore = False  # TODO: Still needed?
+    _ignore = False
+    _old = 0
 
     def __init__(self, config_file):
         self._cfg_file = config_file
-        #self._watch_changes()
+        cfg_dir = os.path.dirname(self._cfg_file)
 
-    """
-    def _watch_changes(self):
         # Watch for config file changes in realtime
         observer = Observer()
-        change_handler = ChangeHandler(self._cfg_file, self._read_cfg)
-        observer.schedule(change_handler, ".", recursive=True)
+        observer.schedule(self, cfg_dir)
         observer.start()
-    """
+
+    def on_modified(self, event):
+        if event.src_path == self._cfg_file:
+            stat = os.stat(event.src_path)
+            new = stat.st_mtime
+
+            # Workaround for watchdog bug
+            # https://github.com/gorakhargosh/watchdog/issues/93
+            if (new - self._old) > 0.5:
+                if self._ignore:
+                    self._ignore = False
+                else:
+                    self._read_cfg()
+
+            self._old = new
 
     def _read_cfg(self):
         if os.path.isfile(self._cfg_file):
@@ -65,15 +76,14 @@ class ConfigManager:
         for key in keys[:-1]:
             try:
                 tmp_cfg = tmp_cfg.setdefault(key, {})
+                tmp_cfg[keys[-1]] = value
+
+                self._ignore = True
+                self._write_cfg()
             except Exception as e:
                 err = f"Couldn't set '{key}' in {self._cfg_file}"
                 logging.debug(f"{repr(e)} - {err}")
                 return
-
-        tmp_cfg[keys[-1]] = value
-
-        self.ignore = True  # TODO: Still needed?
-        self._write_cfg()
 
     def remove(self, keys):
         if not self._cfg:
@@ -81,47 +91,9 @@ class ConfigManager:
 
         try:
             del self._cfg[keys[0]][keys[1]]
+            self._ignore = True
             self._write_cfg()
         except KeyError as e:
             err = f"Can't remove key '{keys}'"
             logging.debug(f"{repr(e)} - {err}")
             return
-
-        # Remove file and folder if config empty
-        if len(self._cfg[keys[0]]) == 0:
-            try:
-                os.remove(self._cfg_file)
-                os.rmdir(os.path.dirname(self._cfg_file))
-            except Exception as e:
-                err = f"Can't remove config {self._cfg_file}"
-                logging.debug(f"{repr(e)} - {err}")
-
-
-"""
-class ChangeHandler(FileSystemEventHandler):
-    file = None
-    method = None
-    old = 0
-
-    def __init__(self, file, method):
-        type(self).file = file
-        type(self).method = method
-
-    @staticmethod
-    def on_modified(event):
-        cfg_path = os.path.join('.', con.DIR_CFG, con.FILE_CFG)
-
-        if event.src_path == cfg_path:
-            statbuf = os.stat(event.src_path)
-            new = statbuf.st_mtime
-
-            # Workaround for watchdog bug
-            # https://github.com/gorakhargosh/watchdog/issues/93
-            if (new - ChangeHandler.old) > 0.5:
-                if ConfigManager.ignore:
-                    ConfigManager.ignore = False
-                else:
-                    ChangeHandler.method()
-
-            ChangeHandler.old = new
-"""
