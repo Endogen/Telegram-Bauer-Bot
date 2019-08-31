@@ -7,7 +7,6 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 
-# TODO: Does ConfigManager need not be loaded on initialization?
 class ConfigManager(FileSystemEventHandler):
 
     _cfg_file = con.FILE_CFG
