@@ -134,17 +134,13 @@ class TelegramBot:
 
     def _add_handler(self, plugin):
         """ Add CommandHandler for given plugin """
-        # TODO: How to do these checks differently and also check if config file is there?
-        if not isinstance(plugin.handle(), str):
-            raise TypeError("Command handle must be a string")
-        if not plugin.handle():
-            raise ValueError("Command handle can't be empty")
+        handle = plugin.handle()
+
+        if not isinstance(handle, str) or not plugin.handle():
+            raise Exception("Wrong command handler")
 
         self.dispatcher.add_handler(
-            CommandHandler(
-                plugin.handle(),
-                plugin.execute,
-                pass_args=True))
+            CommandHandler(handle, plugin.execute, pass_args=True))
 
     def _download(self, bot, update):
         if update.effective_user.id not in self.config.get("admin", "ids"):
