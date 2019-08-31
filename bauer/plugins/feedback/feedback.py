@@ -12,15 +12,12 @@ class Feedback(BauerPlugin):
             self.execute_sql(sql)
         return self
 
-    def get_handle(self):
-        return "feedback"
-
     @BauerPlugin.threaded
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
         if not args:
             update.message.reply_text(
-                text=f"Usage:\n{self.get_usage()}",
+                text=f"Usage:\n{self.usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -30,21 +27,12 @@ class Feedback(BauerPlugin):
         else:
             name = user.first_name
 
-        feedback = update.message.text.replace(f"/{self.get_handle()} ", "")
+        feedback = update.message.text.replace(f"/{self.handle()} ", "")
 
         for admin in self.cfg_get("admin", "ids", plugin=False):
             bot.send_message(admin, f"Feedback from {name}: {feedback}")
 
-        update.message.reply_text(f"Thanks for letting us know {emo.TOP}")
+        update.message.reply_text(f"Thanks for letting us know {emo.HEART}")
 
         sql = self.get_resource("insert_feedback.sql")
         self.execute_sql(sql, user.id, name, user.username, feedback)
-
-    def get_usage(self):
-        return f"`/{self.get_handle()} <your feedback>`\n"
-
-    def get_description(self):
-        return "Send us your feedback"
-
-    def get_category(self):
-        return Category.BOT

@@ -1,7 +1,6 @@
 INFO = "ℹ"
 ERROR = "‼"
 WAIT = "⏳"
-TOP = "👍"
 GOODBYE = "👋"
 DONE = "✅"
 HEART = "❤"

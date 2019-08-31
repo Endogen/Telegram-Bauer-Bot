@@ -6,15 +6,12 @@ from telegram import ParseMode
 
 class Toplist(BauerPlugin):
 
-    def get_handle(self):
-        return "top"
-
     @BauerPlugin.threaded
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
         if not args:
             update.message.reply_text(
-                text=f"Usage:\n{self.get_usage()}",
+                text=f"Usage:\n{self.usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -53,14 +50,5 @@ class Toplist(BauerPlugin):
         # ---- Everything else ----
         else:
             update.message.reply_text(
-                text=f"Usage:\n{self.get_usage()}",
+                text=f"Usage:\n{self.usage()}",
                 parse_mode=ParseMode.MARKDOWN)
-
-    def get_usage(self):
-        return f"`/{self.get_handle()} rain|tip`"
-
-    def get_description(self):
-        return "Show toplist for /rain and /tip"
-
-    def get_category(self):
-        return Category.BISMUTH

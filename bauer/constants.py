@@ -1,10 +1,9 @@
-# Files
+# Project files
 FILE_CFG = "config.json"
 FILE_TKN = "token.json"
 FILE_LOG = "bauer.log"
-FILE_USG = "usage.md"
 
-# Folders
+# Project folders
 DIR_RES = "resources"
 DIR_PLG = "plugins"
 DIR_CFG = "config"

@@ -8,9 +8,6 @@ from bauer.plugin import BauerPlugin
 
 class Logfile(BauerPlugin):
 
-    def get_handle(self):
-        return "logfile"
-
     @BauerPlugin.threaded
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing

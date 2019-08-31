@@ -9,6 +9,7 @@ from bauer.config import ConfigManager as Cfg
 from logging.handlers import TimedRotatingFileHandler
 
 
+# TODO: Use newest python-telegram-bot module
 # TODO: Add debug messages
 # TODO: Add docstrings
 class Bauer:

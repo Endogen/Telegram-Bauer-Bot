@@ -30,9 +30,6 @@ class Restart(BauerPlugin):
 
         return self
 
-    def get_handle(self):
-        return "restart"
-
     @BauerPlugin.threaded
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing

@@ -1,8 +1,7 @@
 {
     "admin": {
-        "description": "Control and maintain bot",
-        "category": "Bot",
         "handle": "admin",
-        "access": [134166731]
+        "category": "Bot",
+        "description": "Control and maintain bot"
     }
 }

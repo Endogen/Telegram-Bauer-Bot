@@ -38,7 +38,7 @@ class BauerPlugin:
 
     def usage(self):
         """ Show how to use the command """
-        usage = self.get_resource(c.FILE_USG)
+        usage = self.get_resource(f"{self.plugin_name()}.md")
 
         if usage:
             usage = usage.replace("{{plugin_name}}", self.plugin_name())

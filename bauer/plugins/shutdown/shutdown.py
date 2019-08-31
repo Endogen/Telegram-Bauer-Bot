@@ -6,9 +6,6 @@ from bauer.plugin import BauerPlugin
 
 class Shutdown(BauerPlugin):
 
-    def get_handle(self):
-        return "shutdown"
-
     @BauerPlugin.threaded
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing
