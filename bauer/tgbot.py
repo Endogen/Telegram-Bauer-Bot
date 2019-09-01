@@ -110,12 +110,15 @@ class TelegramBot:
 
     def _load_plugins(self):
         """ Load all plugins from the 'plugins' folder """
-        for _, folders, _ in os.walk(os.path.join(con.DIR_SRC, con.DIR_PLG)):
-            for folder in folders:
-                if folder.startswith("_"):
-                    continue
-                self._load_plugin(f"{folder}.py")
-            break
+        try:
+            for _, folders, _ in os.walk(os.path.join(con.DIR_SRC, con.DIR_PLG)):
+                for folder in folders:
+                    if folder.startswith("_"):
+                        continue
+                    self._load_plugin(f"{folder}.py")
+                break
+        except Exception as e:
+            logging.error(e)
 
     def _load_plugin(self, file):
         """ Load a single plugin """
