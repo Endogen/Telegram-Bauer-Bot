@@ -9,6 +9,7 @@ import bauer.constants as con
 from bauer.plugin import BauerPlugin
 
 
+# TODO: Add possibility to add argument <plugin name> to backup / export a plugin
 class Backup(BauerPlugin):
 
     BCK_DIR = "backups"
