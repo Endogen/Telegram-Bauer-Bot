@@ -12,6 +12,7 @@ from bauer.plugin import BauerPlugin
 from bauer.plugins.wallet.bismuth import Bismuth
 
 
+# TODO: Combine all Bismuth command to one '/bauer' command?
 class Wallet(BauerPlugin):
 
     TERMS_FILE = "terms.md"
@@ -104,11 +105,14 @@ class Wallet(BauerPlugin):
                     parse_mode=ParseMode.MARKDOWN)
 
         # ---- WITHDRAW ----
+        # TODO: Add optional data
         elif arg == "withdraw":
             if not self._wallet_exists(update, username):
                 return
 
             if len(args) != 3:
+                # TODO: Add better description
+                # TODO: Create .md file for that
                 update.message.reply_text(
                     text=f"{emo.ERROR} Wrong syntax\n"
                          f"`/{self.handle()} withdraw <address> <amount>`",
