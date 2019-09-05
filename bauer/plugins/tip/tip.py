@@ -55,7 +55,7 @@ class Tip(BauerPlugin):
             return
 
         to_user = to_user[1:]
-        from_user = update.effective_user["username"]
+        from_user = update.effective_user.username
 
         # Check if sender has a wallet
         if not Bismuth.wallet_exists(from_user):
