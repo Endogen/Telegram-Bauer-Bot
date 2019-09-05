@@ -36,7 +36,13 @@ class Wallet(BauerPlugin):
                 parse_mode=ParseMode.MARKDOWN)
             return
 
-        username = update.effective_user["username"]
+        username = update.effective_user.username
+
+        if not username:
+            msg = "You need to set a username to use this bot"
+            update.message.reply_text(msg)
+            return
+
         args = [s.lower() for s in args]
         arg = args[0]
 
