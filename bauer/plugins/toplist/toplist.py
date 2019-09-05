@@ -38,8 +38,9 @@ class Toplist(BauerPlugin):
 
             msg = str()
             for data in res["data"]:
+                amount = round(float(data[1]), 3)
                 user = "{:>11}".format(data[0])
-                msg += f"`{data[1]} {user}`\n"
+                msg += f"`{amount} {user}`\n"
 
             update.message.reply_text(
                 text=f"*Tip Toplist*\n\n"
