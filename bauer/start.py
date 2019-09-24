@@ -9,9 +9,9 @@ from bauer.config import ConfigManager as Cfg
 from logging.handlers import TimedRotatingFileHandler
 
 
+# TODO: Tutorial that shows how to write a plugin
 # TODO: Use newest python-telegram-bot module
 # TODO: Add debug messages
-# TODO: Add docstrings
 class Bauer:
 
     def __init__(self):
@@ -23,10 +23,10 @@ class Bauer:
 
         # Read config file and create Telegram bot
         self.cfg = Cfg(os.path.join(con.DIR_CFG, con.FILE_CFG))
-        self.tgb = TelegramBot(self.cfg, self._get_bot_token())
+        self.tgb = TelegramBot(self.cfg, self._get_bot_token()) 
 
-    # Parse arguments
     def _parse_args(self):
+        """ Parse command line arguments """
         desc = "Python Telegram Bot"
         parser = ArgumentParser(description=desc)
 
@@ -78,6 +78,7 @@ class Bauer:
 
     # Configure logging
     def _init_logger(self):
+        """ Initialize the console logger and file logger """
         logger = logging.getLogger()
         logger.setLevel(self.args.loglevel)
 
@@ -117,6 +118,7 @@ class Bauer:
 
     # Read bot token from file
     def _get_bot_token(self):
+        """ Read Telegram bot token from config file or command line or input """
         if self.args.input_token:
             return input("Enter Telegram bot token: ")
         if self.args.token:

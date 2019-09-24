@@ -1,10 +1,13 @@
 import os
 import logging
 import importlib
+import shutil
 import bauer.emoji as emo
+import bauer.utils as utl
 import bauer.constants as con
 
 from importlib import reload
+from zipfile import ZipFile
 from bauer.config import ConfigManager
 from telegram import ParseMode
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
@@ -62,18 +65,18 @@ class TelegramBot:
                         f"{self.config.get('webhook', 'port')}/"
                         f"{self.updater.bot.token}")
 
-    # Go in idle mode
     def bot_idle(self):
+        """ Go in idle mode """
         self.updater.idle()
 
     def add_plugin(self, module_name):
         """ Load a plugin so that it can be used """
         for plugin in self.plugins:
-            if type(plugin).__name__.lower() == module_name.lower():
+            if plugin.get_name() == module_name.lower():
                 return {"success": False, "msg": "Plugin already active"}
 
         try:
-            module_path = f"{con.DIR_SRC}.{con.DIR_PLG}.{module_name}"
+            module_path = f"{con.DIR_SRC}.{con.DIR_PLG}.{module_name}.{module_name}"
             module = importlib.import_module(module_path)
 
             reload(module)
@@ -81,7 +84,7 @@ class TelegramBot:
             with getattr(module, module_name.capitalize())(self) as plugin:
                 self._add_handler(plugin)
                 self.plugins.append(plugin)
-                logging.info(f"Plugin '{type(plugin).__name__}' added")
+                logging.info(f"Plugin '{plugin.get_name()}' added")
                 return {"success": True, "msg": "Plugin added"}
         except Exception as ex:
             msg = f"Plugin '{module_name.capitalize()}' can't be added: {ex}"
@@ -91,16 +94,16 @@ class TelegramBot:
     def remove_plugin(self, module_name):
         """ Unload a plugin so that it can't be used """
         for plugin in self.plugins:
-            if type(plugin).__name__.lower() == module_name.lower():
+            if plugin.get_name() == module_name.lower():
                 try:
                     for handler in self.dispatcher.handlers[0]:
                         if isinstance(handler, CommandHandler):
-                            if handler.command[0] == plugin.handle():
+                            if handler.command[0] == plugin.get_handle():
                                 self.dispatcher.handlers[0].remove(handler)
                                 break
 
                     self.plugins.remove(plugin)
-                    logging.info(f"Plugin '{type(plugin).__name__}' removed")
+                    logging.info(f"Plugin '{plugin.get_name()}' removed")
                     break
                 except Exception as ex:
                     msg = f"Plugin '{module_name.capitalize()}' can't be removed: {ex}"
@@ -131,33 +134,69 @@ class TelegramBot:
                 self._add_handler(plugin)
                 self.plugins.append(plugin)
 
-                logging.info(f"Plugin '{type(plugin).__name__}' added")
+                if plugin.config.get(plugin.get_name(), "interval"):
+                    r = plugin.repeat
+                    i = plugin.config.get(plugin.get_name(), "interval")
+                    plugin._job = self.job_queue.run_repeating(r, i, first=0)
+
+                logging.info(f"Plugin '{plugin.get_name()}' added")
         except Exception as e:
             logging.warning(f"File '{file}': {e}")
 
     def _add_handler(self, plugin):
         """ Add CommandHandler for given plugin """
-        handle = plugin.handle()
+        handle = plugin.get_handle()
 
-        if not isinstance(handle, str) or not plugin.handle():
+        if not isinstance(handle, str) or not plugin.get_handle():
             raise Exception("Wrong command handler")
 
         self.dispatcher.add_handler(
             CommandHandler(handle, plugin.execute, pass_args=True))
 
     def _download(self, bot, update):
+        """ Update whole plugin in .ZIP format or only plugin implementation in .PY format """
         if update.effective_user.id not in self.config.get("admin", "ids"):
             return
 
+        name = update.message.effective_attachment.file_name.lower()
+        zipped = False
+
         try:
-            name = update.message.effective_attachment.file_name
+            if name.endswith(".py"):
+                plugin_name = name.replace(".py", "")
+            elif name.endswith(".zip"):
+                if len(name) == 18:
+                    msg = f"{emo.ERROR} Only single plugins are supported"
+                    update.message.reply_text(msg)
+                    return
+                zipped = True
+                if utl.is_numeric(name[:13]):
+                    plugin_name = name[14:].replace(".zip", "")
+                else:
+                    plugin_name = name.replace(".zip", "")
+            else:
+                msg = f"{emo.ERROR} Wrong file format"
+                update.message.reply_text(msg)
+                return
+
             file = bot.getFile(update.message.document.file_id)
-            file.download(os.path.join(con.DIR_SRC, con.DIR_PLG, name))
 
-            class_name = name.replace(".py", "")
+            if zipped:
+                os.makedirs(con.DIR_TMP, exist_ok=True)
+                zip_path = os.path.join(con.DIR_TMP, name)
+                file.download(zip_path)
 
-            self.remove_plugin(class_name)
-            self.add_plugin(class_name)
+                with ZipFile(zip_path, 'r') as zip_file:
+                    plugin_path = os.path.join(con.DIR_SRC, con.DIR_PLG, plugin_name)
+                    zip_file.extractall(plugin_path)
+            else:
+                file.download(os.path.join(con.DIR_SRC, con.DIR_PLG, plugin_name, name))
+
+            self.remove_plugin(plugin_name)
+            self.add_plugin(plugin_name)
+
+            shutil.rmtree(con.DIR_TMP, ignore_errors=True)
+
             update.message.reply_text(f"{emo.DONE} Plugin loaded successfully")
         except Exception as e:
             logging.error(e)
