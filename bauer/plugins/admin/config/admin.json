@@ -2,6 +2,6 @@
     "admin": {
         "handle": "admin",
         "category": "Bot",
-        "description": "Control and maintain bot"
+        "description": "Control and maintain the bot"
     }
 }

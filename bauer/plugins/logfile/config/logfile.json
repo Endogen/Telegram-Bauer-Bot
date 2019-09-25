@@ -2,6 +2,6 @@
     "logfile": {
         "handle": "log",
         "category": "Bot",
-        "description": "Download latest logfile"
+        "description": "Download current logfile"
     }
 }

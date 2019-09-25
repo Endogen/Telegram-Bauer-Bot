@@ -1,8 +1,10 @@
+import os
 import logging
 import bauer.utils as utl
 import bauer.emoji as emo
 
 from telegram import ParseMode
+from bauer.config import ConfigManager
 from bauer.plugin import BauerPlugin
 
 
@@ -14,22 +16,23 @@ class Admin(BauerPlugin):
     def execute(self, bot, update, args):
         if not args:
             update.message.reply_text(
-                text=f"Usage:\n{self.usage()}",
+                text=f"Usage:\n{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
-        args = [s.lower() for s in args]
-        command = args[0]
+        command = args[0].lower()
+        args.pop(0)
+
+        plugin = args[0].lower()
+        args.pop(0)
 
         # ---- Execute raw SQL ----
         if command == "sql":
-            args.pop(0)
-
-            plugin = args[0].lower()
+            db = args[0].lower()
             args.pop(0)
 
             sql = " ".join(args)
-            res = self.execute_sql(sql, plugin=plugin)
+            res = self.execute_sql(sql, plugin=plugin, db_name=db)
 
             if res["success"]:
                 if res["data"]:
@@ -43,45 +46,80 @@ class Admin(BauerPlugin):
 
         # ---- Change configuration ----
         elif command == "cfg":
+            conf = args[0].lower()
             args.pop(0)
-            v = args[-1]
-            v = v.lower()
-            args.pop(-1)
 
-            # Convert to boolean
-            if v == "true" or v == "false":
-                v = utl.str2bool(v)
+            get_set = args[0].lower()
+            args.pop(0)
 
-            # Convert to integer
-            elif v.isnumeric():
-                v = int(v)
+            # SET a config value
+            if get_set == "set":
+                # Get value for key
+                value = args[-1].replace("__", " ")
+                args.pop(-1)
 
-            # Convert to null
-            elif v == "null" or v == "none":
-                v = None
+                # Check value for boolean
+                if value.lower() == "true" or value.lower() == "false":
+                    value = utl.str2bool(value)
 
-            try:
-                self.cfg_set(v, *args, plugin=False)
-            except Exception as e:
-                logging.error(e)
-                msg = f"{emo.ERROR} {e}"
-                update.message.reply_text(msg)
-                return
+                # Check value for integer
+                elif value.isnumeric():
+                    value = int(value)
 
-            update.message.reply_text(f"{emo.DONE} Config changed")
+                # Check value for null
+                elif value.lower() == "null" or value.lower() == "none":
+                    value = None
+
+                try:
+                    if plugin == "-":
+                        value = self.global_config.set(value, *args)
+                    else:
+                        cfg_file = f"{conf}.json"
+                        plg_conf = self.get_cfg_path(plugin=plugin)
+                        cfg_path = os.path.join(plg_conf, cfg_file)
+                        ConfigManager(cfg_path).set(value, *args)
+                except Exception as e:
+                    logging.error(e)
+                    msg = f"{emo.ERROR} {e}"
+                    update.message.reply_text(msg)
+                    return
+
+                update.message.reply_text(f"{emo.DONE} Config changed")
+
+            # GET a config value
+            elif get_set == "get":
+                try:
+                    if plugin == "-":
+                        value = self.global_config.get(*args)
+                    else:
+                        cfg_file = f"{conf}.json"
+                        plg_conf = self.get_cfg_path(plugin=plugin)
+                        cfg_path = os.path.join(plg_conf, cfg_file)
+                        value = ConfigManager(cfg_path).get(*args)
+                except Exception as e:
+                    logging.error(e)
+                    msg = f"{emo.ERROR} {e}"
+                    update.message.reply_text(msg)
+                    return
+
+                update.message.reply_text(value)
+
+            # Wrong syntax
+            else:
+                update.message.reply_text(
+                    text=f"Usage:\n{self.get_usage()}",
+                    parse_mode=ParseMode.MARKDOWN)
 
         # ---- Manage plugins ----
         elif command == "plg":
-            args.pop(0)
-
             try:
-                # Add plugin
+                # Start plugin
                 if args[0].lower() == "add":
-                    res = self.add_plugin(args[1])
+                    res = self.add_plugin(plugin)
 
-                # Remove plugin
+                # Stop plugin
                 elif args[0].lower() == "remove":
-                    res = self.remove_plugin(args[1])
+                    res = self.remove_plugin(plugin)
 
                 # Wrong sub-command
                 else:
@@ -100,5 +138,5 @@ class Admin(BauerPlugin):
 
         else:
             update.message.reply_text(
-                text=f"Unknown command `{args[0]}`",
+                text=f"Unknown command `{command}`",
                 parse_mode=ParseMode.MARKDOWN)

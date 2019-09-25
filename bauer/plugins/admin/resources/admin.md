@@ -1,5 +1,12 @@
-```
-/{{plugin_name}} sql <plugin> <statement>  
-/{{plugin_name}} cfg <key> (<sub-key>) <value>  
-/{{plugin_name}} plg add|remove <plugin name>
-```
+
+`/{{handle}} sql <plugin name> <database name> <sql statement>`  
+Execute SQL statements on any database of a plugin
+
+`/{{handle}} cfg <plugin name> <config name> get|set <key> (<sub key> ...) (<value>)`  
+Get or set a value in the global configuration file or in a plugin configuration file
+
+`/{{handle}} plg <plugin name> start`  
+Enable a specific plugin
+
+`/{{handle}} plg <plugin name> stop`  
+Disable a specific plugin

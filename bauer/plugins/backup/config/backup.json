@@ -2,6 +2,6 @@
     "backup": {
         "handle": "backup",
         "category": "Bot",
-        "description": "Backup whole bot"
+        "description": "Backup whole bot folder"
     }
 }

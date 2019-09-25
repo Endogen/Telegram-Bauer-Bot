@@ -1,3 +1,3 @@
-```
-/{{plugin_name}} <your feedback>
-```
+
+`/{{handle}} <your feedback>`  
+Send feedback to the bot creator

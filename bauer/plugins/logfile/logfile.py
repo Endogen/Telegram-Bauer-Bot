@@ -12,7 +12,7 @@ class Logfile(BauerPlugin):
     @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
-        base_dir = os.path.abspath('./')
+        base_dir = os.path.abspath(os.getcwd())
         log_file = os.path.join(base_dir, con.DIR_LOG, con.FILE_LOG)
 
         if os.path.isfile(log_file):

@@ -21,7 +21,7 @@ class Tip(BauerPlugin):
     def execute(self, bot, update, args):
         if not args:
             update.message.reply_text(
-                text=f"Usage:\n{self.usage()}",
+                text=f"Usage:\n{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -41,7 +41,7 @@ class Tip(BauerPlugin):
         else:
             # Wrong syntax
             update.message.reply_text(
-                text=f"{emo.ERROR} Wrong number of arguments:\n{self.usage()}",
+                text=f"{emo.ERROR} Wrong number of arguments:\n{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -50,7 +50,7 @@ class Tip(BauerPlugin):
         # Check if username starts with @
         if not to_user.startswith("@"):
             update.message.reply_text(
-                text=f"{emo.ERROR} Username not valid:\n{self.usage()}",
+                text=f"{emo.ERROR} Username not valid:\n{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 

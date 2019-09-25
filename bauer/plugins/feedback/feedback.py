@@ -17,7 +17,7 @@ class Feedback(BauerPlugin):
     def execute(self, bot, update, args):
         if not args:
             update.message.reply_text(
-                text=f"Usage:\n{self.usage()}",
+                text=f"Usage:\n{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -27,10 +27,8 @@ class Feedback(BauerPlugin):
         else:
             name = user.first_name
 
-        feedback = update.message.text.replace(f"/{self.handle()} ", "")
-
-        for admin in self.cfg_get("admin", "ids", plugin=False):
-            bot.send_message(admin, f"Feedback from {name}: {feedback}")
+        feedback = update.message.text.replace(f"/{self.get_handle()} ", "")
+        self.notify(f"Feedback from {name}: {feedback}")
 
         update.message.reply_text(f"Thanks for letting us know {emo.HEART}")
 

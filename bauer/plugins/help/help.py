@@ -11,14 +11,14 @@ class Help(BauerPlugin):
     def execute(self, bot, update, args):
         categories = OrderedDict()
 
-        for p in self.plugins():
-            if p.category() and p.description():
-                des = f"/{p.handle()} - {p.description()}"
+        for p in self.get_plugins():
+            if p.get_category() and p.get_description():
+                des = f"/{p.get_handle()} - {p.get_description()}"
 
-                if p.category() not in categories:
-                    categories[p.category()] = [des]
+                if p.get_category() not in categories:
+                    categories[p.get_category()] = [des]
                 else:
-                    categories[p.category()].append(des)
+                    categories[p.get_category()].append(des)
 
         msg = "*Available commands*\n\n"
 

@@ -33,7 +33,7 @@ class Wallet(BauerPlugin):
     def execute(self, bot, update, args):
         if not args:
             update.message.reply_text(
-                text=f"Usage:\n{self.usage()}",
+                text=f"Usage:\n{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
@@ -55,7 +55,7 @@ class Wallet(BauerPlugin):
                     parse_mode=ParseMode.MARKDOWN)
                 return
 
-            terms_file = os.path.join(self.resource_path(), self.TERMS_FILE)
+            terms_file = os.path.join(self.get_res_path(), self.TERMS_FILE)
             with open(terms_file, "r", encoding="utf8") as file:
                 update.message.reply_text(
                     text=file.read(),
@@ -78,7 +78,7 @@ class Wallet(BauerPlugin):
             if not self._wallet_exists(update, username):
                 return
 
-            qr_dir = os.path.join(self.plugin_path(), self.QRCODES_DIR)
+            qr_dir = os.path.join(self.get_plg_path(), self.QRCODES_DIR)
             qr_name = f"{username}.png"
             qr_code = os.path.join(qr_dir, qr_name)
 
@@ -115,7 +115,7 @@ class Wallet(BauerPlugin):
                 # TODO: Create .md file for that
                 update.message.reply_text(
                     text=f"{emo.ERROR} Wrong syntax\n"
-                         f"`/{self.handle()} withdraw <address> <amount>`",
+                         f"`/{self.get_handle()} withdraw <address> <amount>`",
                     parse_mode=ParseMode.MARKDOWN)
                 return
 
@@ -184,13 +184,13 @@ class Wallet(BauerPlugin):
         else:
             update.message.reply_text(
                 text=f"{emo.ERROR} Wrong sub-command:\n"
-                     f"{self.usage()}",
+                     f"{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
 
     def _wallet_exists(self, update, username):
         if not Bismuth.wallet_exists(username):
             update.message.reply_text(
-                text=f"Create a wallet first with:\n`/{self.handle()} create`",
+                text=f"Create a wallet first with:\n`/{self.get_handle()} create`",
                 parse_mode=ParseMode.MARKDOWN)
             return False
         return True

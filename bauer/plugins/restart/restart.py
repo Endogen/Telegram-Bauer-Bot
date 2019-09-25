@@ -10,8 +10,8 @@ from bauer.plugin import BauerPlugin
 class Restart(BauerPlugin):
 
     def __enter__(self):
-        message = self.cfg_get("message")
-        user_id = self.cfg_get("user_id")
+        message = self.config.get(self.get_name(), "message")
+        user_id = self.config.get(self.get_name(), "user_id")
 
         # If no data saved, don't do anything
         if not message or not user_id:
@@ -25,8 +25,8 @@ class Restart(BauerPlugin):
         except Exception as e:
             logging.error(str(e))
         finally:
-            self.cfg_del("message")
-            self.cfg_del("user_id")
+            self.config.remove(self.get_name(), "message")
+            self.config.remove(self.get_name(), "user_id")
 
         return self
 
@@ -39,8 +39,8 @@ class Restart(BauerPlugin):
 
         user_id = update.effective_user.id
 
-        self.cfg_set(user_id, "user_id")
-        self.cfg_set(m.message_id, "message")
+        self.config.set(user_id, self.get_name(), "user_id")
+        self.config.set(m.message_id, self.get_name(), "message")
 
         m_name = __spec__.name
         m_name = m_name[:m_name.index(".")]

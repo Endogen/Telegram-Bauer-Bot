@@ -1,5 +1,5 @@
 CREATE TABLE feedback (
-    user_id INTEGER NOT NULL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
     first_name TEXT NOT NULL,
 	username TEXT,
 	feedback TEXT NOT NULL,

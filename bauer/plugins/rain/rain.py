@@ -15,7 +15,7 @@ class Rain(BauerPlugin):
     def execute(self, bot, update, args):
         if not args:
             update.message.reply_text(
-                text=f"Usage:\n{self.usage()}",
+                text=f"Usage:\n{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
