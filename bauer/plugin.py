@@ -38,7 +38,7 @@ class BauerPlugin:
         msg = f"Method '{method}' not implemented for plugin '{self.get_name()}'"
         logging.info(msg)
 
-    def repeat(self, callback, interval, first=None):
+    def repeat(self, callback, interval, first=0):
         """ Logic that gets executed periodically """
         self._tgb.job_queue.run_repeating(callback, interval, first=first)
         logging.info(f"Started repeating job '{self.get_name()}'")
