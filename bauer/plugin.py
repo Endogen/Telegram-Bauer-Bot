@@ -41,6 +41,7 @@ class BauerPlugin:
     def repeat(self, callback, interval, first=None):
         """ Logic that gets executed periodically """
         self._tgb.job_queue.run_repeating(callback, interval, first=first)
+        logging.info(f"Started repeating job '{self.get_name()}'")
 
     def get_usage(self):
         """ Return how to use the command """
