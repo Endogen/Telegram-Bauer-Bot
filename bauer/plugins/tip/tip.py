@@ -8,7 +8,7 @@ from bauer.plugins.bismuth.bismuth import BisClient
 
 class Tip(BauerPlugin):
 
-    DEFAULT_TIP = 1
+    DEFAULT_TIP = 1  # BIS coins
 
     def __enter__(self):
         if not self.table_exists("tip"):
