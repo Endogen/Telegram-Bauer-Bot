@@ -133,12 +133,6 @@ class TelegramBot:
             with getattr(module, module_name.capitalize())(self) as plugin:
                 self._add_handler(plugin)
                 self.plugins.append(plugin)
-
-                if plugin.config.get(plugin.get_name(), "interval"):
-                    r = plugin.repeat
-                    i = plugin.config.get(plugin.get_name(), "interval")
-                    plugin._job = self.job_queue.run_repeating(r, i, first=0)
-
                 logging.info(f"Plugin '{plugin.get_name()}' added")
         except Exception as e:
             logging.warning(f"File '{file}': {e}")
