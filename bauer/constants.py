@@ -7,6 +7,7 @@ DIR_PLG = "plugins"
 DIR_CFG = "config"
 DIR_LOG = "logs"
 DIR_DAT = "data"
+DIR_TMP = "temp"
 
 # Project files
 FILE_CFG = "config.json"
