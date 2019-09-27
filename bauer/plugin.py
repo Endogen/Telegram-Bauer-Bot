@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import logging
+import inspect
 import threading
 import bauer.constants as c
 
@@ -23,7 +24,8 @@ class BauerPlugin:
         self.config = ConfigManager(cfg_path)
 
     def __enter__(self):
-        """ This method gets executed before the plugin gets loaded """
+        """ This method gets executed before the plugin gets loaded.
+        Make sure to return 'self' if you override it """
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -31,12 +33,14 @@ class BauerPlugin:
         pass
 
     def execute(self, bot, update, args):
-        """ Logic that gets executed if command gets triggered """
-        pass
+        """ Override this to be executed after command gets triggered """
+        method = inspect.currentframe().f_code.co_name
+        msg = f"Method '{method}' not implemented for plugin '{self.get_name()}'"
+        logging.info(msg)
 
-    def repeat(self, bot, job):
-        """ Logic that gets executed for a periodic job """
-        pass
+    def repeat(self, callback, interval, first=None):
+        """ Logic that gets executed periodically """
+        self._tgb.job_queue.run_repeating(callback, interval, first=first)
 
     def get_usage(self):
         """ Return how to use the command """
