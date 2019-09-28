@@ -14,7 +14,6 @@ class BauerPlugin:
 
     def __init__(self, tg_bot):
         self._tgb = tg_bot
-        self._job = None
 
         # Create access to global config
         self.global_config = self._tgb.config
@@ -69,10 +68,20 @@ class BauerPlugin:
         """ Return a list of all active plugins """
         return self._tgb.plugins
 
-    def get_job(self):
-        """ Return the periodic job or None if
-        'interval' is not set in plugin config """
-        return self._job
+    def get_jobs(self):
+        """ Return a tuple with all currently active jobs """
+        return self._tgb.job_queue.jobs()
+
+    def get_job(self, name=None):
+        """ Return the periodic job with the given name or
+        None if 'interval' is not set in plugin config """
+        name = self.get_name() if not name else name
+        jobs = self._tgb.job_queue.get_jobs_by_name(name)
+
+        if not jobs or len(jobs) < 1:
+            return None
+
+        return jobs[0]
 
     def add_plugin(self, module_name):
         """ Enable a plugin """
