@@ -75,6 +75,7 @@ class BauerPlugin:
     def get_job(self, name=None):
         """ Return the periodic job with the given name or
         None if 'interval' is not set in plugin config """
+
         name = self.get_name() if not name else name
         jobs = self._tgb.job_queue.get_jobs_by_name(name)
 
