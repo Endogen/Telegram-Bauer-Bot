@@ -35,7 +35,7 @@ class BauerPlugin:
         """ Override this to be executed after command gets triggered """
         method = inspect.currentframe().f_code.co_name
         msg = f"Method '{method}' not implemented for plugin '{self.get_name()}'"
-        logging.info(msg)
+        logging.warning(msg)
 
     def repeat(self, callback, interval, first=0):
         """ Logic that gets executed periodically """
