@@ -1,7 +1,5 @@
 {
-    "logfile": {
-        "handle": "log",
-        "category": "Bot",
-        "description": "Download current logfile"
-    }
+    "handle": "log",
+    "category": "Bot",
+    "description": "Download current logfile"
 }

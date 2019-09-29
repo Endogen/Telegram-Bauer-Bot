@@ -1,7 +1,5 @@
 {
-    "bismuth": {
-        "handle": "bis",
-        "category": "Bismuth",
-        "description": "Interact with BIS wallet"
-    }
+    "handle": "bis",
+    "category": "Bismuth",
+    "description": "Interact with BIS wallet"
 }

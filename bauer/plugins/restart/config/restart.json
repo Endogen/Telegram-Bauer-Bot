@@ -1,7 +1,5 @@
 {
-    "restart": {
-        "handle": "restart",
-        "category": "Bot",
-        "description": "Restart the bot"
-    }
+    "handle": "restart",
+    "category": "Bot",
+    "description": "Restart the bot"
 }

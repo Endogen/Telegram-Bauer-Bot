@@ -1,7 +1,5 @@
 {
-    "rain": {
-        "handle": "rain",
-        "category": "Bismuth",
-        "description": "Randomly distribute BIS coins"
-    }
+    "handle": "rain",
+    "category": "Bismuth",
+    "description": "Randomly distribute BIS coins"
 }

@@ -54,15 +54,15 @@ class BauerPlugin:
 
     def get_handle(self):
         """ Return the command string that triggers the plugin """
-        return self.config.get(self.get_name(), "handle")
+        return self.config.get("handle")
 
     def get_category(self):
         """ Return the category of the plugin for the 'help' command """
-        return self.config.get(self.get_name(), "category")
+        return self.config.get("category")
 
     def get_description(self):
         """ Return the description of the plugin """
-        return self.config.get(self.get_name(), "description")
+        return self.config.get("description")
 
     def get_plugins(self):
         """ Return a list of all active plugins """

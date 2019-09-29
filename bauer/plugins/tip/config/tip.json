@@ -1,7 +1,5 @@
 {
-    "tip": {
-        "handle": "tip",
-        "category": "Bismuth",
-        "description": "Tip BIS coins to user"
-    }
+    "handle": "tip",
+    "category": "Bismuth",
+    "description": "Tip BIS coins to user"
 }

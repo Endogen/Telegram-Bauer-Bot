@@ -1,7 +1,5 @@
 {
-    "shutdown": {
-        "handle": "shutdown",
-        "category": "Bot",
-        "description": "Shutdown the bot"
-    }
+    "handle": "shutdown",
+    "category": "Bot",
+    "description": "Shutdown the bot"
 }
