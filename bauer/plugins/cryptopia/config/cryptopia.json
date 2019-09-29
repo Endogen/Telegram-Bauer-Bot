@@ -1,0 +1,6 @@
+{
+    "handle": "cryptopia",
+    "category": "Repeating Jobs",
+    "description": "Check Cryptopia BIS wallet",
+    "interval": 600
+}
