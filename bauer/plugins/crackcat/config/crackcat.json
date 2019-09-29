@@ -1,0 +1,6 @@
+{
+    "handle": "crackcat",
+    "category": "Repeating Jobs",
+    "description": "Check if crackcat.de is reachable",
+    "interval": 900
+}
