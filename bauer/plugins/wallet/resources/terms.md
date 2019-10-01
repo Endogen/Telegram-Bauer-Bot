@@ -1,0 +1,1 @@
+The wallet that will be generated for you is meant for tipping and you should only deposit small amounts. Bismuth developers have access to the private key.

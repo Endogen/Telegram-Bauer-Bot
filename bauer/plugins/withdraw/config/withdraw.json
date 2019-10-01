@@ -1,0 +1,6 @@
+{
+    "handle": "withdraw",
+    "category": "Bismuth",
+    "description": "Withdraw BIS coins to a wallet",
+    "dependency": ["wallet"]
+}

@@ -1,1 +1,0 @@
-Generated wallet is for tipping and should only hold small amounts. Bismuth developers have access to the private key.

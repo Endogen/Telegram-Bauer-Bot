@@ -11,6 +11,7 @@ class Rain(BauerPlugin):
             self.execute_sql(sql)
         return self
 
+    @BauerPlugin.threaded
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
         if not args:

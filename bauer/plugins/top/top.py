@@ -4,7 +4,7 @@ from bauer.plugin import BauerPlugin
 from telegram import ParseMode
 
 
-class Toplist(BauerPlugin):
+class Top(BauerPlugin):
 
     @BauerPlugin.threaded
     @BauerPlugin.send_typing

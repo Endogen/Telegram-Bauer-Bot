@@ -1,0 +1,6 @@
+{
+    "handle": "balance",
+    "category": "Bismuth",
+    "description": "Show balance of your BIS wallet",
+    "dependency": ["wallet"]
+}

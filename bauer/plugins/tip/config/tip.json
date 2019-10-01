@@ -1,5 +1,6 @@
 {
     "handle": "tip",
     "category": "Bismuth",
-    "description": "Tip BIS coins to user"
+    "description": "Tip BIS coins to users",
+    "dependency": ["wallet"]
 }

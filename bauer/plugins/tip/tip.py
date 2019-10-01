@@ -3,7 +3,7 @@ import bauer.utils as utl
 
 from telegram import ParseMode
 from bauer.plugin import BauerPlugin
-from bauer.plugins.bismuth.bismuth import BisClient
+from bauer.plugins.wallet.wallet import Bismuth
 
 
 class Tip(BauerPlugin):
@@ -58,23 +58,22 @@ class Tip(BauerPlugin):
         from_user = update.effective_user.username
 
         # Check if sender has a wallet
-        if not BisClient.wallet_exists(from_user):
-            update.message.reply_text(
-                text=f"{emo.ERROR} Create a wallet first with:\n`/wallet create`",
-                parse_mode=ParseMode.MARKDOWN)
+        if not Bismuth.wallet_exists(from_user):
+            msg = "Accept terms and create a wallet first with:\n/accept"
+            update.message.reply_text(msg)
             return
 
         # Check if recipient has a wallet
-        if not BisClient.wallet_exists(to_user):
+        if not Bismuth.wallet_exists(to_user):
             update.message.reply_text(
-                text=f"{emo.ERROR} User @{utl.esc_md(to_user)} doesn't have a wallet",
+                text=f"{emo.ERROR} User @{utl.esc_md(to_user)} doesn't have a wallet yet",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
         message = update.message.reply_text(f"{emo.WAIT} Processing...")
 
         # Init sender wallet
-        bis = BisClient(from_user)
+        bis = Bismuth(from_user)
         bis.load_wallet()
 
         # Check for sufficient funds

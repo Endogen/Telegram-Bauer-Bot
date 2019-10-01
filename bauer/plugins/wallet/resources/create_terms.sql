@@ -1,0 +1,4 @@
+CREATE TABLE terms_accepted (
+	username TEXT NOT NULL PRIMARY KEY,
+	date_time DATETIME DEFAULT CURRENT_TIMESTAMP
+)

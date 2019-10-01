@@ -1,0 +1,6 @@
+{
+    "handle": "deposit",
+    "category": "Bismuth",
+    "description": "Show qr-code for your BIS wallet",
+    "dependency": ["wallet"]
+}

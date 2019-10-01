@@ -27,7 +27,7 @@ class Bauer:
 
     def _parse_args(self):
         """ Parse command line arguments """
-        desc = "Python Telegram Bot"
+        desc = "Telegram bot for Bismuth cryptocurrency"
         parser = ArgumentParser(description=desc)
 
         # Save logfile
