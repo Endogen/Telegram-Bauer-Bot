@@ -298,7 +298,7 @@ class BauerPlugin:
         plugins in the config file of the current plugin are enabled """
 
         def _dependencies(self, bot, update, **kwargs):
-            dependencies = self.plugin_config.get("dependency")
+            dependencies = self.config.get("dependency")
             if dependencies and isinstance(dependencies, list):
                 plugins = [p.get_name() for p in self.get_plugins()]
                 for dependency in dependencies:
