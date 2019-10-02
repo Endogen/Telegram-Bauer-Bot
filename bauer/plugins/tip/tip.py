@@ -1,11 +1,13 @@
 import bauer.emoji as emo
 import bauer.utils as utl
+import logging
 
 from telegram import ParseMode
 from bauer.plugin import BauerPlugin
 from bauer.plugins.wallet.wallet import Bismuth
 
 
+# TODO: Add confirmation dialog
 class Tip(BauerPlugin):
 
     DEFAULT_TIP = 1  # BIS coins
@@ -20,42 +22,65 @@ class Tip(BauerPlugin):
     @BauerPlugin.dependency
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
-        if not args:
-            update.message.reply_text(
-                text=f"Usage:\n{self.get_usage()}",
-                parse_mode=ParseMode.MARKDOWN)
-            return
+        reply = update.message.reply_to_message
 
-        # Determine amount to tip
-        if len(args) == 1:
-            # Tip default BIS amount
-            amount = self.DEFAULT_TIP
-        elif len(args) == 2:
-            # Tip specified BIS amount
-            try:
-                amount = float(args[1])
-            except:
-                update.message.reply_text(
-                    text=f"{emo.ERROR} Specified amount is not valid",
-                    parse_mode=ParseMode.MARKDOWN)
+        # Tip the user that you reply to
+        if reply:
+            # Determine amount to tip
+            if len(args) == 0:
+                # Tip default BIS amount
+                amount = self.DEFAULT_TIP
+            elif len(args) == 1:
+                # Tip specified BIS amount
+                try:
+                    amount = float(args[0])
+                except:
+                    msg = f"{emo.ERROR} Specified amount is not valid"
+                    update.message.reply_text(msg)
+                    return
+            else:
+                msg = "You are tipping the user you reply to. " \
+                      "Only allowed argument is the amount."
+                update.message.reply_text(msg)
                 return
+
+            to_user = reply.from_user.username
+
+        # Provide username to be tipped
         else:
-            # Wrong syntax
-            update.message.reply_text(
-                text=f"{emo.ERROR} Wrong number of arguments:\n{self.get_usage()}",
-                parse_mode=ParseMode.MARKDOWN)
-            return
+            if not args:
+                msg = f"Usage:\n{self.get_usage()}"
+                update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+                return
 
-        to_user = args[0]
+            # Determine amount to tip
+            if len(args) == 1:
+                # Tip default BIS amount
+                amount = self.DEFAULT_TIP
+            elif len(args) == 2:
+                # Tip specified BIS amount
+                try:
+                    amount = float(args[1])
+                except:
+                    msg = f"{emo.ERROR} Specified amount is not valid"
+                    update.message.reply_text(msg)
+                    return
+            else:
+                # Wrong syntax
+                msg = f"{emo.ERROR} Wrong number of arguments:\n{self.get_usage()}"
+                update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+                return
 
-        # Check if username starts with @
-        if not to_user.startswith("@"):
-            update.message.reply_text(
-                text=f"{emo.ERROR} Username not valid:\n{self.get_usage()}",
-                parse_mode=ParseMode.MARKDOWN)
-            return
+            to_user = args[0]
 
-        to_user = to_user[1:]
+            # Check if username starts with @
+            if not to_user.startswith("@"):
+                msg = f"{emo.ERROR} Username not valid:\n{self.get_usage()}"
+                update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
+                return
+
+            to_user = to_user[1:]
+
         from_user = update.effective_user.username
 
         # Check if sender has a wallet
@@ -66,12 +91,12 @@ class Tip(BauerPlugin):
 
         # Check if recipient has a wallet
         if not Bismuth.wallet_exists(to_user):
-            update.message.reply_text(
-                text=f"{emo.ERROR} User @{utl.esc_md(to_user)} doesn't have a wallet yet",
-                parse_mode=ParseMode.MARKDOWN)
+            msg = f"{emo.ERROR} User @{utl.esc_md(to_user)} doesn't have a wallet yet"
+            update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
             return
 
-        message = update.message.reply_text(f"{emo.WAIT} Processing...")
+        msg = f"{emo.WAIT} Processing..."
+        message = update.message.reply_text(msg)
 
         # Init sender wallet
         bis = Bismuth(from_user)
@@ -79,7 +104,8 @@ class Tip(BauerPlugin):
 
         # Check for sufficient funds
         if float(bis.get_balance()) <= amount:
-            update.message.reply_text(f"{emo.ERROR} Not enough funds")
+            msg = f"{emo.ERROR} Not enough funds"
+            update.message.reply_text(msg)
             return
 
         # Process actual tipping
@@ -92,8 +118,21 @@ class Tip(BauerPlugin):
             bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=f"{emo.DONE} @{to_user} received `{amount}` BIS",
+                text=f"{emo.DONE} @{utl.esc_md(to_user)} received `{amount}` BIS",
                 parse_mode=ParseMode.MARKDOWN)
+
+            try:
+                # Get user ID from tipped user
+                sql = self.get_resource("get_user_id.sql")
+                response = self.execute_sql(sql, to_user, plugin="wallet")
+                user_id = response["data"][0][0] if response["success"] else None
+
+                if user_id:
+                    # Send message to tipped user
+                    msg = f"You've been tipped with `{amount}` BIS by @{utl.esc_md(from_user)}"
+                    bot.send_message(user_id, msg, parse_mode=ParseMode.MARKDOWN)
+            except Exception as e:
+                logging.warning(e)
         else:
             # Send error message
             bot.edit_message_text(

@@ -50,17 +50,13 @@ class Wallet(BauerPlugin):
         menu = utl.build_menu([InlineKeyboardButton("Accept Terms", callback_data=username)])
         return InlineKeyboardMarkup(menu, resize_keyboard=True)
 
-    def _terms_accepted(self, username):
-        """ Add flag that user accepted terms """
-        statement = self.get_resource("insert_terms.sql")
-        self.execute_sql(statement, username)
-
     def _callback(self, bot, update):
         query = update.callback_query
+        user_id = update.effective_user["id"]
         username = update.effective_user["username"]
 
         if query.data == username:
-            self._terms_accepted(username)
+            self._terms_accepted(user_id, username)
 
             query.edit_message_text(
                 f"{emo.WAIT} Generating wallet...",
@@ -84,6 +80,11 @@ class Wallet(BauerPlugin):
                 query.edit_message_text(f"{emo.ERROR} Something went wrong...")
                 bot.answer_callback_query(query.id, text=f"{emo.ERROR} No wallet created")
 
+    def _terms_accepted(self, user_id, username):
+        """ Add flag that user accepted terms """
+        statement = self.get_resource("insert_terms.sql")
+        self.execute_sql(statement, user_id, username)
+
 
 class Bismuth:
 
@@ -91,14 +92,11 @@ class Bismuth:
     WALLET_DIR = os.path.join(con.DIR_SRC, con.DIR_PLG, MODULE, "wallets")
 
     def __init__(self, username):
-        logging.debug(f"Create Bismuth client for user {username}")
         self._client = self._get_client(username)
-        logging.debug(f"Get Bismuth server for user {username}")
-        server = self._client.get_server()
-        logging.debug(f"Current server {server}")
+        self._client.get_server()
 
     def _get_client(self, username):
-        wallet_path = self.get_wallet_path(username)
+        wallet_path = self._wallet_path(username)
         client = BismuthClient(wallet_file=wallet_path)
         return client
 
@@ -121,7 +119,7 @@ class Bismuth:
         return self._client.send(send_to, float(amount))
 
     @staticmethod
-    def get_wallet_path(username):
+    def _wallet_path(username):
         os.makedirs(Bismuth.WALLET_DIR, exist_ok=True)
         return os.path.join(Bismuth.WALLET_DIR, f"{username}.der")
 
@@ -129,7 +127,7 @@ class Bismuth:
     def get_address_for(username):
         if Bismuth.wallet_exists(username):
             try:
-                wallet = Bismuth.get_wallet_path(username)
+                wallet = Bismuth._wallet_path(username)
                 with open(wallet, "r") as f:
                     return json.load(f)["Address"]
             except Exception as e:
@@ -140,5 +138,5 @@ class Bismuth:
 
     @staticmethod
     def wallet_exists(username):
-        wallet = Bismuth.get_wallet_path(username)
+        wallet = Bismuth._wallet_path(username)
         return os.path.isfile(wallet)
