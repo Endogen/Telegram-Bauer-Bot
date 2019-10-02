@@ -6,6 +6,7 @@ from telegram import ParseMode
 class Address(BauerPlugin):
 
     @BauerPlugin.threaded
+    @BauerPlugin.dependency
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
         username = update.effective_user.username

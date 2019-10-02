@@ -12,6 +12,7 @@ class Rain(BauerPlugin):
         return self
 
     @BauerPlugin.threaded
+    @BauerPlugin.dependency
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
         if not args:
