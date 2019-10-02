@@ -4,6 +4,7 @@ import logging
 import inspect
 import threading
 import bauer.constants as c
+import bauer.emoji as emo
 
 from pathlib import Path
 from telegram import ChatAction
@@ -239,9 +240,8 @@ class BauerPlugin:
 
         if self.global_config.get("admin", "notify_on_error"):
             for admin in self.global_config.get("admin", "ids"):
-                self._tgb.updater.bot.send_message(
-                    text=f"Notification:\n{some_input}",
-                    chat_id=admin)
+                msg = f"{emo.ALERT} Admin Notification:\n{some_input}"
+                self._tgb.updater.bot.send_message(msg, chat_id=admin)
         return some_input
 
     @staticmethod
