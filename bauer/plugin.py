@@ -293,11 +293,11 @@ class BauerPlugin:
         return _only_owner
 
     @classmethod
-    def dependencies(cls, func):
+    def dependency(cls, func):
         """ Decorator that executes a method only if the mentioned
         plugins in the config file of the current plugin are enabled """
 
-        def _dependencies(self, bot, update, **kwargs):
+        def _dependency(self, bot, update, **kwargs):
             dependencies = self.config.get("dependency")
             if dependencies and isinstance(dependencies, list):
                 plugins = [p.get_name() for p in self.get_plugins()]
@@ -305,4 +305,4 @@ class BauerPlugin:
                     if dependency.lower() not in plugins:
                         return
             return func(self, bot, update, **kwargs)
-        return _dependencies
+        return _dependency
