@@ -6,7 +6,6 @@ from bauer.plugin import BauerPlugin
 from telegram import ParseMode
 
 
-# TODO: Add who received the most
 class Top(BauerPlugin):
 
     @BauerPlugin.threaded
