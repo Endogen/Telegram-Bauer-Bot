@@ -1,9 +1,12 @@
 import bauer.emoji as emo
+import bauer.utils as utl
+import math
 
 from bauer.plugin import BauerPlugin
 from telegram import ParseMode
 
 
+# TODO: Add who received the most
 class Top(BauerPlugin):
 
     @BauerPlugin.threaded
@@ -25,9 +28,11 @@ class Top(BauerPlugin):
                 parse_mode=ParseMode.MARKDOWN)
             pass
 
-        # ---- TIP top-list ----
+        # ---- TIP toplist ----
         elif args[0] == "tip":
-            sql = self.get_resource("top_tip.sql")
+
+            # ---- Who gave the most ----
+            sql = self.get_resource("top_tip_giver.sql")
             res = self.execute_sql(sql, plugin="tip")
 
             if not res["success"]:
@@ -36,17 +41,46 @@ class Top(BauerPlugin):
                     parse_mode=ParseMode.MARKDOWN)
                 return
 
-            msg = str()
-            for data in res["data"]:
-                amount = round(float(data[1]), 3)
-                user = "{:>11}".format(data[0])
-                msg += f"`{amount} {user}`\n"
+            length = 0
+            first = True
+            msg = f"*Tip Toplist*\n\nWho gave the most:\n"
 
-            update.message.reply_text(
-                text=f"*Tip Toplist*\n\n"
-                     f"Who gave the most:\n"
-                     f"{msg}",
-                parse_mode=ParseMode.MARKDOWN)
+            for data in res["data"]:
+                user = f"@{utl.esc_md(data[0])}"
+                amount = f"{math.ceil(data[1] * 100) / 100:.2f}"
+
+                if first:
+                    first = False
+                    length = len(amount)
+
+                msg += f"`{amount:>{length}}` {user}\n"
+
+            # ---- Who received the most ----
+            msg += "\nWho received the most:\n"
+
+            sql = self.get_resource("top_tip_taker.sql")
+            res = self.execute_sql(sql, plugin="tip")
+
+            if not res["success"]:
+                update.message.reply_text(
+                    text=f"{emo.ERROR} {res['data']}",
+                    parse_mode=ParseMode.MARKDOWN)
+                return
+
+            length = 0
+            first = True
+
+            for data in res["data"]:
+                user = f"@{utl.esc_md(data[0])}"
+                amount = f"{math.ceil(data[1] * 100) / 100:.2f}"
+
+                if first:
+                    first = False
+                    length = len(amount)
+
+                msg += f"`{amount:>{length}}` {user}\n"
+
+            update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
 
         # ---- Everything else ----
         else:
