@@ -32,6 +32,11 @@ class Top(BauerPlugin):
                     parse_mode=ParseMode.MARKDOWN)
                 return
 
+            if not res["data"]:
+                msg = f"{emo.INFO} No data yet"
+                update.message.reply_text(msg)
+                return
+
             length = 0
             first = True
             msg = f"*Rain Toplist*\n\nWho gave the most:\n"
@@ -56,6 +61,11 @@ class Top(BauerPlugin):
                 update.message.reply_text(
                     text=f"{emo.ERROR} {res['data']}",
                     parse_mode=ParseMode.MARKDOWN)
+                return
+
+            if not res["data"]:
+                msg = f"{emo.INFO} No data yet"
+                update.message.reply_text(msg)
                 return
 
             length = 0
