@@ -111,8 +111,8 @@ class Tip(BauerPlugin):
         # Process actual tipping
         if bis.tip(to_user, amount):
             # Save tipping in database
-            statement = self.get_resource("insert_tip.sql")
-            self.execute_sql(statement, from_user, to_user, amount)
+            insert = self.get_resource("insert_tip.sql")
+            self.execute_sql(insert, from_user, to_user, amount)
 
             # Send success message
             bot.edit_message_text(
@@ -124,8 +124,8 @@ class Tip(BauerPlugin):
             try:
                 # Get user ID from tipped user
                 sql = self.get_resource("get_user_id.sql")
-                response = self.execute_sql(sql, to_user, plugin="wallet")
-                user_id = response["data"][0][0] if response["success"] else None
+                res = self.execute_sql(sql, to_user, plugin="wallet")
+                user_id = res["data"][0][0] if res["success"] else None
 
                 if user_id:
                     # Send message to tipped user
