@@ -153,16 +153,16 @@ class BauerPlugin:
             res["data"] = cur.fetchall()
             res["success"] = True
         except Exception as e:
-            logging.error(e)
-            self.notify(e)
-
             res["data"] = str(e)
             res["success"] = False
 
-        if con:
-            con.close()
+            logging.error(e)
+            self.notify(e)
+        finally:
+            if con:
+                con.close()
 
-        return res
+            return res
 
     def table_exists(self, table_name, plugin="", db_name=""):
         """ Return TRUE if given table exists, otherwise FALSE """
@@ -241,7 +241,7 @@ class BauerPlugin:
         if self.global_config.get("admin", "notify_on_error"):
             for admin in self.global_config.get("admin", "ids"):
                 msg = f"{emo.ALERT} Admin Notification:\n{some_input}"
-                self._tgb.updater.bot.send_message(msg, chat_id=admin)
+                self._tgb.updater.bot.send_message(admin, msg)
         return some_input
 
     @staticmethod
@@ -274,6 +274,7 @@ class BauerPlugin:
             return func(self, bot, update, **kwargs)
         return _send_typing_action
 
+    # TODO: We need also a 'only_admin' decorator that checks if user is an admin
     @classmethod
     def only_owner(cls, func):
         """ Decorator that executes the method only of the user is an admin """
