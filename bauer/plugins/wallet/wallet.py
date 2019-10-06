@@ -72,13 +72,11 @@ class Wallet(BauerPlugin):
                 bis = None
 
             if bis:
-                query.edit_message_text(
-                    f"Hey @{utl.esc_md(username)}, your address is `{bis.get_address()}`",
-                    parse_mode=ParseMode.MARKDOWN)
-                bot.answer_callback_query(query.id, text=f"{emo.HEART} Wallet created")
+                msg = f"Hey @{utl.esc_md(username)}, your address is `{bis.get_address()}`"
+                query.edit_message_text(msg, parse_mode=ParseMode.MARKDOWN)
             else:
-                query.edit_message_text(f"{emo.ERROR} Something went wrong...")
-                bot.answer_callback_query(query.id, text=f"{emo.ERROR} No wallet created")
+                msg = f"{emo.ERROR} Something went wrong..."
+                query.edit_message_text(msg)
 
     def _terms_accepted(self, user_id, username):
         """ Add flag that user accepted terms """
