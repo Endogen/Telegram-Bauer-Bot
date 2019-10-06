@@ -56,12 +56,17 @@ class Wallet(BauerPlugin):
         username = update.effective_user["username"]
 
         if query.data == username:
-            self._terms_accepted(user_id, username)
+            msg = f"{emo.WAIT} Wait a few seconds..."
+            bot.answer_callback_query(query.id, msg)
 
             query.edit_message_text(
                 f"{emo.WAIT} Generating wallet...",
                 parse_mode=ParseMode.MARKDOWN,
                 reply_markup=None)
+
+            # Save user id and username to database
+            statement = self.get_resource("insert_terms.sql")
+            self.execute_sql(statement, user_id, username)
 
             try:
                 bis = Bismuth(username)
@@ -77,11 +82,6 @@ class Wallet(BauerPlugin):
             else:
                 msg = f"{emo.ERROR} Something went wrong..."
                 query.edit_message_text(msg)
-
-    def _terms_accepted(self, user_id, username):
-        """ Add flag that user accepted terms """
-        statement = self.get_resource("insert_terms.sql")
-        self.execute_sql(statement, user_id, username)
 
 
 class Bismuth:
