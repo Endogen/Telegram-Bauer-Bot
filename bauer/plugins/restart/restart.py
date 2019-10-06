@@ -10,23 +10,23 @@ from bauer.plugin import BauerPlugin
 class Restart(BauerPlugin):
 
     def __enter__(self):
-        message = self.config.get("message")
-        user_id = self.config.get("user_id")
+        chat_id = self.config.get("chat_id")
+        mess_id = self.config.get("message_id")
 
         # If no data saved, don't do anything
-        if not message or not user_id:
+        if not mess_id or not chat_id:
             return self
 
         try:
             self._tgb.updater.bot.edit_message_text(
-                chat_id=user_id,
-                message_id=message,
+                chat_id=chat_id,
+                message_id=mess_id,
                 text=f"{emo.DONE} Restarting bot...")
         except Exception as e:
             logging.error(str(e))
         finally:
-            self.config.remove("message")
-            self.config.remove("user_id")
+            self.config.remove("chat_id")
+            self.config.remove("message_id")
 
         return self
 
@@ -35,12 +35,13 @@ class Restart(BauerPlugin):
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
         msg = f"{emo.WAIT} Restarting bot..."
-        m = update.message.reply_text(msg)
+        message = update.message.reply_text(msg)
 
-        user_id = update.effective_user.id
+        chat_id = message.chat_id
+        mess_id = message.message_id
 
-        self.config.set(user_id, "user_id")
-        self.config.set(m.message_id, "message")
+        self.config.set(chat_id, "chat_id")
+        self.config.set(mess_id, "message_id")
 
         m_name = __spec__.name
         m_name = m_name[:m_name.index(".")]
