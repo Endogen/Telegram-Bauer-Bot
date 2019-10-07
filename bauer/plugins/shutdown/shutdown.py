@@ -6,8 +6,8 @@ from bauer.plugin import BauerPlugin
 
 class Shutdown(BauerPlugin):
 
+    @BauerPlugin.owner
     @BauerPlugin.threaded
-    @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
         msg = f"{emo.GOODBYE} Shutting down..."

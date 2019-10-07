@@ -1,5 +1,6 @@
 {
     "handle": "backup",
     "category": "Bot",
-    "description": "Backup whole bot folder"
+    "description": "Backup whole bot folder",
+    "private": true
 }

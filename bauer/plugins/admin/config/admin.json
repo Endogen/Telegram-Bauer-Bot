@@ -1,5 +1,6 @@
 {
     "handle": "admin",
     "category": "Bot",
-    "description": "Control and maintain the bot"
+    "description": "Control and maintain the bot",
+    "private": true
 }

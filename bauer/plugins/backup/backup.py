@@ -12,8 +12,9 @@ class Backup(BauerPlugin):
 
     BCK_DIR = "backups"
 
+    @BauerPlugin.owner
+    @BauerPlugin.private
     @BauerPlugin.threaded
-    @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
         command = ""

@@ -1,5 +1,6 @@
 {
     "handle": "log",
     "category": "Bot",
-    "description": "Download current logfile"
+    "description": "Download current logfile",
+    "private": true
 }

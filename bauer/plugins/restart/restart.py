@@ -30,8 +30,8 @@ class Restart(BauerPlugin):
 
         return self
 
+    @BauerPlugin.owner
     @BauerPlugin.threaded
-    @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
         msg = f"{emo.WAIT} Restarting bot..."

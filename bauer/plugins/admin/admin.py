@@ -10,8 +10,9 @@ from bauer.plugin import BauerPlugin
 
 class Admin(BauerPlugin):
 
+    @BauerPlugin.owner
+    @BauerPlugin.private
     @BauerPlugin.threaded
-    @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
         if not args:

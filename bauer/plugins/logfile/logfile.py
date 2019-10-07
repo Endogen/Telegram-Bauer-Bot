@@ -8,8 +8,9 @@ from bauer.plugin import BauerPlugin
 
 class Logfile(BauerPlugin):
 
+    @BauerPlugin.owner
+    @BauerPlugin.private
     @BauerPlugin.threaded
-    @BauerPlugin.only_owner
     @BauerPlugin.send_typing
     def execute(self, bot, update, args):
         base_dir = os.path.abspath(os.getcwd())
