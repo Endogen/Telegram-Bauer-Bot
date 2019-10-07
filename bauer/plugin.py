@@ -7,7 +7,7 @@ import bauer.constants as c
 import bauer.emoji as emo
 
 from pathlib import Path
-from telegram import ChatAction
+from telegram import ChatAction, Chat
 from bauer.config import ConfigManager
 
 
@@ -247,16 +247,27 @@ class BauerPlugin:
     @staticmethod
     def threaded(fn):
         """ Decorator for methods that have to run in their own thread """
-        def wrapper(*args, **kwargs):
+        def _threaded(*args, **kwargs):
             thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
             thread.start()
+
             return thread
-        return wrapper
+        return _threaded
+
+    @classmethod
+    def private(cls, func):
+        """ Decorator for methods that need to be run in a private chat with the bot """
+        def _private(self, bot, update, **kwargs):
+            if self.config.get("private"):
+                if bot.get_chat(update.message.chat_id).type == Chat.PRIVATE:
+                    return func(self, bot, update, **kwargs)
+
+        return _private
 
     @classmethod
     def send_typing(cls, func):
         """ Decorator for sending typing notification in the Telegram chat """
-        def _send_typing_action(self, bot, update, **kwargs):
+        def _send_typing(self, bot, update, **kwargs):
             if update.message:
                 user_id = update.message.chat_id
             elif update.callback_query:
@@ -272,26 +283,32 @@ class BauerPlugin:
                 logging.error(f"{e} - {update}")
 
             return func(self, bot, update, **kwargs)
-        return _send_typing_action
+        return _send_typing
 
-    # TODO: We need also a 'only_admin' decorator that checks if user is an admin
     @classmethod
-    def only_owner(cls, func):
-        """ Decorator that executes the method only of the user is an admin """
-        def _only_owner(self, bot, update, **kwargs):
+    def owner(cls, func):
+        """
+        Decorator that executes the method only if the user is an bot admin.
+
+        The user ID that triggered the command has to be in the ["admin"]["ids"]
+        list of the global config file 'config.json' or in the ["admins"] list
+        of the currently used plugin config file.
+        """
+
+        def _owner(self, bot, update, **kwargs):
             user_id = update.effective_user.id
 
             admins_global = self.global_config.get("admin", "ids")
-            if not admins_global or not isinstance(admins_global, list):
-                return
-            admins_local = self.global_config.get("admin", "ids")
-            if not admins_local or not isinstance(admins_local, list):
-                return
+            if admins_global and isinstance(admins_global, list):
+                if user_id in admins_global:
+                    return func(self, bot, update, **kwargs)
 
-            if user_id in admins_global or user_id in admins_local:
-                return func(self, bot, update, **kwargs)
+            admins_plugin = self.config.get("admins")
+            if admins_plugin and isinstance(admins_plugin, list):
+                if user_id in admins_plugin:
+                    return func(self, bot, update, **kwargs)
 
-        return _only_owner
+        return _owner
 
     @classmethod
     def dependency(cls, func):
@@ -300,10 +317,13 @@ class BauerPlugin:
 
         def _dependency(self, bot, update, **kwargs):
             dependencies = self.config.get("dependency")
+
             if dependencies and isinstance(dependencies, list):
                 plugins = [p.get_name() for p in self.get_plugins()]
+
                 for dependency in dependencies:
                     if dependency.lower() not in plugins:
                         return
+
             return func(self, bot, update, **kwargs)
         return _dependency
