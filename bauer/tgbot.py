@@ -9,7 +9,7 @@ import bauer.constants as con
 from importlib import reload
 from zipfile import ZipFile
 from bauer.config import ConfigManager
-from telegram import ParseMode
+from telegram import ParseMode, Chat
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 from telegram.error import InvalidToken
 
@@ -43,7 +43,7 @@ class TelegramBot:
         self._load_plugins()
 
         # Handler for file downloads (plugin updates)
-        mh = MessageHandler(Filters.document, self._download)
+        mh = MessageHandler(Filters.document, self._update_plugin)
         self.dispatcher.add_handler(mh)
 
         # Handle all Telegram related errors
@@ -147,8 +147,26 @@ class TelegramBot:
         self.dispatcher.add_handler(
             CommandHandler(handle, plugin.execute, pass_args=True))
 
-    def _download(self, bot, update):
-        """ Update whole plugin in .ZIP format or only plugin implementation in .PY format """
+    def _update_plugin(self, bot, update):
+        """
+        Update a plugin by uploading a file to the bot.
+
+        If you provide a .ZIP file then the content will be extracted into
+        the plugin with the same name as the file. For example the file
+        'about.zip' will be extracted into the 'about' plugin folder.
+
+        It's also possible to provide a .PY file. In this case the file will
+        replace the plugin implementation with the same name. For example the
+        file 'about.py' will replace the same file in the 'about' plugin.
+
+        All of this will only work in a private chat with the bot.
+        """
+
+        # Check if in a private chat
+        if bot.get_chat(update.message.chat_id).type != Chat.PRIVATE:
+            return
+
+        # Check if user that triggered the command is allowed to execute it
         if update.effective_user.id not in self.config.get("admin", "ids"):
             return
 
@@ -191,7 +209,7 @@ class TelegramBot:
 
             shutil.rmtree(con.DIR_TMP, ignore_errors=True)
 
-            update.message.reply_text(f"{emo.DONE} Plugin loaded successfully")
+            update.message.reply_text(f"{emo.DONE} Plugin successfully loaded")
         except Exception as e:
             logging.error(e)
             msg = f"{emo.ERROR} {e}"
