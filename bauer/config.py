@@ -69,7 +69,7 @@ class ConfigManager(FileSystemEventHandler):
             logging.error(f"{repr(e)} - {err}")
 
     def get(self, *keys):
-        """ Return the value for the given key(s) from the configuration file """
+        """ Return the value of the given key(s) from a configuration file """
         if not self._cfg:
             self._read_cfg()
 
