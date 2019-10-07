@@ -21,7 +21,7 @@ class Bauer:
         # Set up logging
         self._init_logger()
 
-        # Read config file and create Telegram bot
+        # Read global config file and create Telegram bot
         self.cfg = Cfg(os.path.join(con.DIR_CFG, con.FILE_CFG))
         self.tgb = TelegramBot(self.cfg, self._get_bot_token()) 
 
