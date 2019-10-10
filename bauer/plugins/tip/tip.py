@@ -7,7 +7,6 @@ from bauer.plugin import BauerPlugin
 from bauer.plugins.wallet.wallet import Bismuth
 
 
-# TODO: Add confirmation dialog
 class Tip(BauerPlugin):
 
     DEFAULT_TIP = 1  # BIS coins
