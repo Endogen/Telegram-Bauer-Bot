@@ -178,7 +178,7 @@ class TelegramBot:
                 plugin_name = name.replace(".py", "")
             elif name.endswith(".zip"):
                 if len(name) == 18:
-                    msg = f"{emo.ERROR} Only single plugins are supported"
+                    msg = f"{emo.ERROR} Only backups of plugins are supported"
                     update.message.reply_text(msg)
                     return
                 zipped = True
