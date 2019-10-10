@@ -23,14 +23,14 @@ class Withdraw(BauerPlugin):
             update.message.reply_text(msg)
             return
 
-        if len(args) != 3:
+        if len(args) != 2:
             update.message.reply_text(
                 text=f"Usage:\n{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
             return
 
-        send_to = args[1]
-        amount = args[2]
+        send_to = args[0]
+        amount = args[1]
 
         if not BismuthUtil.valid_address(send_to):
             update.message.reply_text(
@@ -58,7 +58,7 @@ class Withdraw(BauerPlugin):
             self._tgb.updater.bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=f"{emo.DONE} Done! [View on Block Explorer]({url})\n"
+                text=f"{emo.DONE} Done!\n[View on Block Explorer]({url})\n"
                      f"(Available after ~1 minute)",
                 parse_mode=ParseMode.MARKDOWN)
         else:
