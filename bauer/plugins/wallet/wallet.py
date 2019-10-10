@@ -113,8 +113,8 @@ class Bismuth:
         address = Bismuth.get_address_for(username)
         return self._client.send(address, float(amount)) if address else None
 
-    def send(self, address, amount):
-        return self._client.send(address, float(amount))
+    def send(self, address, amount, operation="", data=""):
+        return self._client.send(address, float(amount), operation=operation, data=data)
 
     @staticmethod
     def _wallet_path(username):

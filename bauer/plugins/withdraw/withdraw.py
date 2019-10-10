@@ -7,7 +7,6 @@ from bauer.plugin import BauerPlugin
 from telegram import ParseMode
 
 
-# TODO: Add optional data
 class Withdraw(BauerPlugin):
 
     BLCK_EXPL_URL = "https://bismuth.online/search?quicksearch="
@@ -23,7 +22,7 @@ class Withdraw(BauerPlugin):
             update.message.reply_text(msg)
             return
 
-        if len(args) != 2:
+        if len(args) < 2 or len(args) > 4:
             update.message.reply_text(
                 text=f"Usage:\n{self.get_usage()}",
                 parse_mode=ParseMode.MARKDOWN)
@@ -31,6 +30,14 @@ class Withdraw(BauerPlugin):
 
         send_to = args[0]
         amount = args[1]
+
+        operation = ""
+        if len(args) > 2:
+            operation = args[2]
+
+        data = ""
+        if len(args) > 3:
+            data = args[3]
 
         if not BismuthUtil.valid_address(send_to):
             update.message.reply_text(
@@ -50,7 +57,7 @@ class Withdraw(BauerPlugin):
 
         bis = Bismuth(username)
         bis.load_wallet()
-        trx = bis.send(send_to, amount)
+        trx = bis.send(send_to, amount, operation, data)
 
         url = f"{self.BLCK_EXPL_URL}{utl.encode_url(trx)}"
 
