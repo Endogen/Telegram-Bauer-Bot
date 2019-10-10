@@ -62,14 +62,14 @@ class Withdraw(BauerPlugin):
         url = f"{self.BLCK_EXPL_URL}{utl.encode_url(trx)}"
 
         if trx:
-            self._tgb.updater.bot.edit_message_text(
+            bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=f"{emo.DONE} Done!\n[View on Block Explorer]({url})\n"
                      f"(Available after ~1 minute)",
                 parse_mode=ParseMode.MARKDOWN)
         else:
-            self._tgb.updater.bot.edit_message_text(
+            bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
                 text=f"{emo.ERROR} Not able to send Transaction")

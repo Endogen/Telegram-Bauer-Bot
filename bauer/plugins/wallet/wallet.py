@@ -16,8 +16,8 @@ class Wallet(BauerPlugin):
     TERMS_FILE = "terms.md"
 
     def __enter__(self):
-        self._tgb.dispatcher.add_handler(
-            CallbackQueryHandler(self._callback))
+        self.add_handler(CallbackQueryHandler(self._callback))
+
         if not self.table_exists("terms_accepted"):
             sql = self.get_resource("create_terms.sql")
             self.execute_sql(sql)
