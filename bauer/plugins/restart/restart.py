@@ -7,6 +7,7 @@ import bauer.emoji as emo
 from bauer.plugin import BauerPlugin
 
 
+# TODO: Remove access to protected variable
 class Restart(BauerPlugin):
 
     def __enter__(self):

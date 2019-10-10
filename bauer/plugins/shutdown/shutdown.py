@@ -15,6 +15,7 @@ class Shutdown(BauerPlugin):
 
         threading.Thread(target=self._shutdown_thread).start()
 
+    # TODO: Remove access to protected variable
     def _shutdown_thread(self):
         self._tgb.updater.stop()
         self._tgb.updater.is_idle = False
