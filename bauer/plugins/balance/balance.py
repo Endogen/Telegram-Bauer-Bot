@@ -31,7 +31,7 @@ class Balance(BauerPlugin):
         if utl.is_numeric(balance):
             balance = f"`{balance}` BIS"
 
-        self._tgb.updater.bot.edit_message_text(
+        bot.edit_message_text(
             chat_id=message.chat_id,
             message_id=message.message_id,
             text=f"Balance: {balance}",
