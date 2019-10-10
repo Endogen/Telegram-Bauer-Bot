@@ -85,6 +85,9 @@ class BauerPlugin:
 
         return jobs[0]
 
+    def add_handler(self, handler, group=0):
+        self._tgb.dispatcher.add_handler(handler, group=group)
+
     def add_plugin(self, module_name):
         """ Enable a plugin """
         return self._tgb.add_plugin(module_name)
