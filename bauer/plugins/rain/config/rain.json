@@ -1,6 +1,6 @@
 {
     "handle": "rain",
     "category": "Bismuth",
-    "description": "Randomly distribute BIS coins",
+    "description": "Distribute BIS coins to random users",
     "dependency": ["wallet"]
 }
