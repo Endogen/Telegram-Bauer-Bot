@@ -39,10 +39,8 @@ class Wallet(BauerPlugin):
                 parse_mode=ParseMode.MARKDOWN)
             return
 
-        terms = self.get_resource(self.TERMS_FILE)
-
         update.message.reply_text(
-            text=terms,
+            text=self.get_resource(self.TERMS_FILE),
             parse_mode=ParseMode.MARKDOWN,
             reply_markup=self._terms_keyboard(username))
 
