@@ -39,12 +39,12 @@ class Wallet(BauerPlugin):
                 parse_mode=ParseMode.MARKDOWN)
             return
 
-        terms_file = os.path.join(self.get_res_path(), self.TERMS_FILE)
-        with open(terms_file, "r", encoding="utf8") as file:
-            update.message.reply_text(
-                text=file.read(),
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=self._terms_keyboard(username))
+        terms = self.get_resource(self.TERMS_FILE)
+
+        update.message.reply_text(
+            text=terms,
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=self._terms_keyboard(username))
 
     def _terms_keyboard(self, username):
         menu = utl.build_menu([InlineKeyboardButton("Accept Terms", callback_data=username)])
