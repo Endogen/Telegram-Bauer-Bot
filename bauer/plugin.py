@@ -38,11 +38,6 @@ class BauerPlugin:
         msg = f"Method '{method}' not implemented for plugin '{self.get_name()}'"
         logging.warning(msg)
 
-    def repeat(self, callback, interval, first=0):
-        """ Logic that gets executed periodically """
-        self._tgb.job_queue.run_repeating(callback, interval, first=first, name=self.get_name())
-        logging.info(f"Started repeating job '{self.get_name()}'")
-
     def get_usage(self):
         """ Return how to use the command """
         usage = self.get_resource(f"{self.get_name()}.md")
@@ -84,6 +79,11 @@ class BauerPlugin:
             return None
 
         return jobs[0]
+
+    def repeat_job(self, callback, interval, first=0):
+        """ Logic that gets executed periodically """
+        self._tgb.job_queue.run_repeating(callback, interval, first=first, name=self.get_name())
+        logging.info(f"Started repeating job '{self.get_name()}'")
 
     def add_handler(self, handler, group=0):
         self._tgb.dispatcher.add_handler(handler, group=group)
