@@ -1,5 +1,5 @@
 
-`/{{handle}} <@username> <amount>`
+`/{{handle}} <@username> <amount>`  
 Tip a user with BIS coins by providing his Telegram username and the amount to tip
     
 `/{{handle}} <@username>`  
