@@ -135,6 +135,7 @@ deposit - Shows qr-code for your address
 feedback - <your feedback>
 help - Show overview of available commands
 logfile - Download current logfile
+price - Show price on exchanges in BTC
 rain - <total amount> <number of users>
 restart - Restart the bot
 shutdown - Shutdown the bot
