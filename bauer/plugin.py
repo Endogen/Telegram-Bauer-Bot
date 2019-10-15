@@ -141,9 +141,15 @@ class BauerPlugin:
         else:
             db_path = os.path.join(self.get_dat_path(), db_name)
 
-        # Create directory if it doesn't exist
-        directory = os.path.dirname(db_path)
-        os.makedirs(directory, exist_ok=True)
+        try:
+            # Create directory if it doesn't exist
+            directory = os.path.dirname(db_path)
+            os.makedirs(directory, exist_ok=True)
+        except Exception as e:
+            res["data"] = str(e)
+            res["success"] = False
+            logging.error(e)
+            self.notify(e)
 
         con = None
 
@@ -158,7 +164,6 @@ class BauerPlugin:
         except Exception as e:
             res["data"] = str(e)
             res["success"] = False
-
             logging.error(e)
             self.notify(e)
         finally:
@@ -243,8 +248,12 @@ class BauerPlugin:
 
         if self.global_config.get("admin", "notify_on_error"):
             for admin in self.global_config.get("admin", "ids"):
-                msg = f"{emo.ALERT} Admin Notification:\n{some_input}"
-                self._tgb.updater.bot.send_message(admin, msg)
+                try:
+                    msg = f"{emo.ALERT} Admin Notification:\n{some_input}"
+                    self._tgb.updater.bot.send_message(admin, msg)
+                except Exception as e:
+                    error = f"Not possible to notify admin id '{admin}'"
+                    logging.error(f"{error}: {e}")
         return some_input
 
     @staticmethod
