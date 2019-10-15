@@ -11,6 +11,8 @@ from telegram import ParseMode
 
 class Rain(BauerPlugin):
 
+    FEE = 0.01
+
     def __enter__(self):
         if not self.table_exists("rain"):
             sql = self.get_resource("create_rain.sql")
@@ -96,7 +98,7 @@ class Rain(BauerPlugin):
         # Remove own user from list of users to rain on
         user_list = [x for x in res["data"] if x[1] != from_user]
 
-        # Check if enough user available to be rained on
+        # Check if enough users available to be rained on
         if len(user_list) < users:
             msg = f"{emo.ERROR} Not enough users. {len(user_list)} available"
             update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
@@ -113,19 +115,28 @@ class Rain(BauerPlugin):
         bis.load_wallet()
 
         # Check for sufficient funds
-        if float(bis.get_balance()) <= amount:
+        fees = amount + (users * self.FEE)
+        if float(bis.get_balance()) < fees:
             msg = f"{emo.ERROR} Not enough funds"
             update.message.reply_text(msg)
             return
 
-        result = f"{emo.DONE} @{utl.esc_md(from_user)} sent `{user_amount}` each to: "
+        result = f"{emo.DONE} @{utl.esc_md(from_user)} sent `{user_amount}` BIS each to: "
 
         for to_data in chosen:
             to_user_id = to_data[0]
             to_user = to_data[1]
 
-            # Execute tipping
-            if bis.tip(to_user, user_amount):
+            try:
+                # Execute tipping
+                trx = bis.tip(to_user, user_amount)
+            except Exception as e:
+                error = "Error while executing rain tip"
+                logging.error(f"{error}: {e}")
+                self.notify(e)
+                trx = None
+
+            if trx:
                 # Save tipping in database
                 # TODO: Do i have to lock the DB while writing?
                 insert = self.get_resource("insert_rain.sql")
@@ -134,16 +145,24 @@ class Rain(BauerPlugin):
                 # Add username of tipped user to confirmation message
                 result += f"@{utl.esc_md(to_user)} "
 
-                # Send message to tipped user
-                msg = f"You've been tipped with `{user_amount}` BIS by @{utl.esc_md(from_user)}"
-                bot.send_message(to_user_id, msg, parse_mode=ParseMode.MARKDOWN)
+                try:
+                    # Send success message to tipped user
+                    msg = f"You've been tipped with `{user_amount}` BIS by @{utl.esc_md(from_user)}"
+                    bot.send_message(to_user_id, msg, parse_mode=ParseMode.MARKDOWN)
+                except Exception as e:
+                    error = f"Not possible to notify user '{to_user}' about rain tip"
+                    logging.debug(f"{error}: {e}")
             else:
-                # Send error message to tipping user
-                msg = f"{emo.ERROR} Sending `{user_amount}` to @{utl.esc_md(to_user)} not possible. Check logs."
-                bot.send_message(from_user_id, msg, parse_mode=ParseMode.MARKDOWN)
+                try:
+                    # Send error message to tipping user
+                    msg = f"{emo.ERROR} Not possible to send `{user_amount}` BIS to @{utl.esc_md(to_user)}"
+                    bot.send_message(from_user_id, msg, parse_mode=ParseMode.MARKDOWN)
 
-                logging.error(msg)
-                self.notify(msg)
+                    logging.error(msg)
+                    self.notify(msg)
+                except Exception as e:
+                    error = f"Not possible to notify tipping user '{from_user}' about failed rain tip"
+                    logging.debug(f"{error}: {e}")
 
         # Check if at least one user got tipped
         if result.count("@") > 1:
