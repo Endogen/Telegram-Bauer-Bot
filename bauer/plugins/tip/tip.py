@@ -102,18 +102,30 @@ class Tip(BauerPlugin):
         bis = Bismuth(from_user)
         bis.load_wallet()
 
-        # Check for sufficient funds
         balance = bis.get_balance()
         total = amount + con.TRX_FEE
 
+        # Check for sufficient funds
         if not utl.is_numeric(balance) or float(balance) < total:
-            msg = f"{emo.ERROR} Not enough funds"
-            update.message.reply_text(msg)
+            bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                text=f"{emo.ERROR} Not enough funds")
             return
 
-        # Process actual tipping
-        if bis.tip(to_user, amount):
-            # Save tipping in database
+        try:
+            # Execute tipping
+            trx = bis.tip(to_user, amount)
+        except Exception as e:
+            error = f"Error executing tip from @{from_user} to @{to_user} with {amount}: {e}"
+            logging.error(error)
+            self.notify(error)
+            trx = None
+
+        if trx:
+            logging.debug(f"Tip from '{from_user}' to '{to_user}' with {amount} BIS - TRX: {trx}")
+
+            # Save tipping to database
             insert = self.get_resource("insert_tip.sql")
             self.execute_sql(insert, from_user, to_user, amount)
 
@@ -124,21 +136,26 @@ class Tip(BauerPlugin):
                 text=f"{emo.DONE} @{utl.esc_md(to_user)} received `{amount}` BIS",
                 parse_mode=ParseMode.MARKDOWN)
 
-            try:
-                # Get user ID from tipped user
-                sql = self.get_resource("get_user_id.sql")
-                res = self.execute_sql(sql, to_user, plugin="wallet")
-                user_id = res["data"][0][0] if res["success"] else None
+            # Get user ID from tipped user
+            sql = self.get_resource("get_user_id.sql")
+            res = self.execute_sql(sql, to_user, plugin="wallet")
+            to_user_id = res["data"][0][0] if res["success"] else None
 
-                if user_id:
-                    # Send message to tipped user
+            if to_user_id:
+                try:
+                    # Send success message to tipped user
                     msg = f"You've been tipped with `{amount}` BIS by @{utl.esc_md(from_user)}"
-                    bot.send_message(user_id, msg, parse_mode=ParseMode.MARKDOWN)
-            except Exception as e:
-                logging.warning(e)
+                    bot.send_message(to_user_id, msg, parse_mode=ParseMode.MARKDOWN)
+                except Exception as e:
+                    error = f"Can't notify user '{to_user}' about tip"
+                    logging.debug(f"{error}: {e}")
+            else:
+                error = f"Can't notify user '{to_user}' about tip. User ID not found in DB"
+                logging.error(error)
+                self.notify(error)
         else:
             # Send error message
             bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=f"{emo.ERROR} Something went wrong")
+                text=f"{emo.ERROR} Tipping not executed. Something went wrong...")
