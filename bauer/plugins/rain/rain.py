@@ -54,10 +54,9 @@ class Rain(BauerPlugin):
         try:
             amount = float(amount)
             users = int(users)
-        except ValueError as e:
+        except:
             msg = f"{emo.ERROR} Arguments not valid"
             update.message.reply_text(msg)
-            logging.error(e)
             return
 
         if users < 1:
@@ -82,6 +81,7 @@ class Rain(BauerPlugin):
             update.message.reply_text(msg)
             return
 
+        # Get all users from database
         sql = self.get_resource("read_users.sql")
         res = self.execute_sql(sql, plugin="wallet")
 
@@ -113,11 +113,15 @@ class Rain(BauerPlugin):
         bis = Bismuth(from_user)
         bis.load_wallet()
 
-        # Check for sufficient funds
+        balance = bis.get_balance()
         total = amount + (users * con.TRX_FEE)
-        if float(bis.get_balance()) < total:
-            msg = f"{emo.ERROR} Not enough funds"
-            update.message.reply_text(msg)
+
+        # Check for sufficient funds
+        if not utl.is_numeric(balance) or float(balance) < total:
+            bot.edit_message_text(
+                chat_id=message.chat_id,
+                message_id=message.message_id,
+                text=f"{emo.ERROR} Not enough funds")
             return
 
         result = f"{emo.DONE} @{utl.esc_md(from_user)} sent `{user_amount}` BIS each to: "
@@ -130,13 +134,15 @@ class Rain(BauerPlugin):
                 # Execute tipping
                 trx = bis.tip(to_user, user_amount)
             except Exception as e:
-                error = "Error while executing rain tip"
-                logging.error(f"{error}: {e}")
-                self.notify(e)
+                error = f"Error executing rain from @{from_user} to @{to_user} with {user_amount} BIS: {e}"
+                logging.error(error)
+                self.notify(error)
                 trx = None
 
             if trx:
-                # Save tipping in database
+                logging.debug(f"Rain from '{from_user}' to '{to_user}' with {user_amount} BIS - TRX: {trx}")
+
+                # Save tipping to database
                 # TODO: Do i have to lock the DB while writing?
                 insert = self.get_resource("insert_rain.sql")
                 self.execute_sql(insert, from_user, to_user, amount)
@@ -149,18 +155,15 @@ class Rain(BauerPlugin):
                     msg = f"You've been tipped with `{user_amount}` BIS by @{utl.esc_md(from_user)}"
                     bot.send_message(to_user_id, msg, parse_mode=ParseMode.MARKDOWN)
                 except Exception as e:
-                    error = f"Not possible to notify user '{to_user}' about rain tip"
+                    error = f"Not possible to notify user '{to_user}' about rain"
                     logging.debug(f"{error}: {e}")
             else:
                 try:
                     # Send error message to tipping user
                     msg = f"{emo.ERROR} Not possible to send `{user_amount}` BIS to @{utl.esc_md(to_user)}"
                     bot.send_message(from_user_id, msg, parse_mode=ParseMode.MARKDOWN)
-
-                    logging.error(msg)
-                    self.notify(msg)
                 except Exception as e:
-                    error = f"Not possible to notify tipping user '{from_user}' about failed rain tip"
+                    error = f"Not possible to notify tipping user '{from_user}' about failed rain"
                     logging.debug(f"{error}: {e}")
 
         # Check if at least one user got tipped
@@ -177,5 +180,4 @@ class Rain(BauerPlugin):
             bot.edit_message_text(
                 chat_id=message.chat_id,
                 message_id=message.message_id,
-                text=f"{emo.ERROR} Rain not executed. Something went wrong...",
-                parse_mode=ParseMode.MARKDOWN)
+                text=f"{emo.ERROR} Rain not executed. Something went wrong...")
