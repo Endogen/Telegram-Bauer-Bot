@@ -1,3 +1,4 @@
+import bauer.constants as con
 import bauer.emoji as emo
 import bauer.utils as utl
 import logging
@@ -10,8 +11,6 @@ from telegram import ParseMode
 
 
 class Rain(BauerPlugin):
-
-    FEE = 0.01
 
     def __enter__(self):
         if not self.table_exists("rain"):
@@ -115,8 +114,8 @@ class Rain(BauerPlugin):
         bis.load_wallet()
 
         # Check for sufficient funds
-        fees = amount + (users * self.FEE)
-        if float(bis.get_balance()) < fees:
+        total = amount + (users * con.TRX_FEE)
+        if float(bis.get_balance()) < total:
             msg = f"{emo.ERROR} Not enough funds"
             update.message.reply_text(msg)
             return
