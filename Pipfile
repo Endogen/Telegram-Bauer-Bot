@@ -6,12 +6,12 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-python-telegram-bot = "11.1.0"
+python-telegram-bot = "==11.1.0"
 watchdog = "*"
 requests = "*"
-BismuthClient = "0.0.44"
+BismuthClient = "==0.0.49"
 myqr = "*"
-pycoingecko = "0.4.0"
+pycoingecko = "==0.4.0"
 
 [requires]
 python_version = "3.7"
