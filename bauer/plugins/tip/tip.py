@@ -1,5 +1,6 @@
 import bauer.emoji as emo
 import bauer.utils as utl
+import bauer.constants as con
 import logging
 
 from telegram import ParseMode
@@ -102,7 +103,10 @@ class Tip(BauerPlugin):
         bis.load_wallet()
 
         # Check for sufficient funds
-        if float(bis.get_balance()) <= amount:
+        balance = bis.get_balance()
+        total = amount + con.TRX_FEE
+
+        if not utl.is_numeric(balance) or float(balance) < total:
             msg = f"{emo.ERROR} Not enough funds"
             update.message.reply_text(msg)
             return
