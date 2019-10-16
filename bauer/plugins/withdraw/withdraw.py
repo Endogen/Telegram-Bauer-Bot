@@ -1,5 +1,6 @@
 import bauer.emoji as emo
 import bauer.utils as utl
+import logging
 
 from bismuthclient.bismuthutil import BismuthUtil
 from bauer.plugins.wallet.wallet import Bismuth
@@ -57,7 +58,18 @@ class Withdraw(BauerPlugin):
 
         bis = Bismuth(username)
         bis.load_wallet()
-        trx = bis.send(send_to, amount, operation, data)
+
+        try:
+            trx = bis.send(send_to, amount, operation, data)
+        except Exception as e:
+            logging.error(e)
+            self.notify(e)
+            trx = None
+
+        if not trx:
+            msg = f"{emo.ERROR} Withdrawal not possible. Something went wrong..."
+            update.message.reply_text(msg)
+            return
 
         url = f"{self.BLCK_EXPL_URL}{utl.encode_url(trx)}"
 
