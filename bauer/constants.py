@@ -1,5 +1,8 @@
 import os
 
+# Bismuth
+TRX_FEE = 0.01
+
 # Project folders
 DIR_SRC = os.path.basename(os.path.dirname(__file__))
 DIR_RES = "resources"
