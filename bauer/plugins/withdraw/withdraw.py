@@ -8,6 +8,7 @@ from bauer.plugin import BauerPlugin
 from telegram import ParseMode
 
 
+# TODO: Rename to 'send'
 class Withdraw(BauerPlugin):
 
     BLCK_EXPL_URL = "https://bismuth.online/search?quicksearch="
@@ -59,6 +60,8 @@ class Withdraw(BauerPlugin):
         bis = Bismuth(username)
         bis.load_wallet()
 
+        # TODO: Add balance check
+
         try:
             trx = bis.send(send_to, amount, operation, data)
         except Exception as e:
@@ -67,7 +70,7 @@ class Withdraw(BauerPlugin):
             trx = None
 
         if not trx:
-            msg = f"{emo.ERROR} Withdrawal not possible. Something went wrong..."
+            msg = f"{emo.ERROR} Sending not possible. Something went wrong..."
             update.message.reply_text(msg)
             return
 
