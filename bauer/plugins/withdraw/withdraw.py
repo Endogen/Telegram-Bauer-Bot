@@ -70,7 +70,7 @@ class Withdraw(BauerPlugin):
         bis.load_wallet()
 
         balance = bis.get_balance()
-        total = float(amount) + con.TRX_FEE
+        total = float(amount) + BismuthUtil.fee_for_tx(data)
 
         # Check for sufficient funds
         if not utl.is_numeric(balance) or float(balance) < total:
