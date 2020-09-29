@@ -1,0 +1,6 @@
+{
+    "handle": "bisurl",
+    "category": "Bismuth",
+    "description": "Decode a transaction from bisurl",
+    "dependency": ["wallet"]
+}
