@@ -1,0 +1,6 @@
+{
+    "handle": "bisurlqr",
+    "category": "Bismuth",
+    "description": "Decode bisurl from qr-code image",
+    "dependency": ["wallet"]
+}
